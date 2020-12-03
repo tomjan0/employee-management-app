@@ -127,5 +127,8 @@
       }
     }
   },
-  "defaultProject": "employee-management-app"
+  "defaultProject": "employee-management-app",
+  "cli": {
+    "analytics": false
+  }
 }
