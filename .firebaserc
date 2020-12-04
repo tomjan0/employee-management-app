@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "employee-management-84591": {
+      "hosting": {
+        "employee-management-app": [
+          "employee-management-84591"
+        ]
+      }
+    }
+  }
+}
