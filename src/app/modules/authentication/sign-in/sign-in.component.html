@@ -1,0 +1,30 @@
+<div class="container-outer">
+  <div class="container-inner">
+    <form [formGroup]="signInForm" (ngSubmit)="signIn()">
+      <mat-form-field appearance="standard">
+        <mat-label>Wpisz adres e-mail</mat-label>
+        <input matInput placeholder="" formControlName="email" required>
+        <mat-error *ngIf="email">{{getErrorMessage(email)}}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="standard">
+        <mat-label>Wpisz hasło</mat-label>
+        <input matInput [type]="hide ? 'password' : 'text'" formControlName="password">
+        <button type="button" mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
+                [attr.aria-pressed]="hide">
+          <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+        <mat-error *ngIf="password.invalid">{{getErrorMessage(password)}}</mat-error>
+      </mat-form-field>
+      <button [attr.aria-label]="'Sign in'" type="submit" [disabled]="!signInForm.valid"
+              mat-raised-button color="primary">Zaloguj
+      </button>
+      <a (click)="resetPasswort()" target="_blank">Nie pamiętasz hasła?</a>
+    </form>
+    <section class="register-prompt">
+      <h2>Nie posiadasz konta i chcesz je założyć dla swojej organizacji?</h2>
+      <a mat-button color="accent" (click)="createAccount()">Załóż konto firmowe</a>
+    </section>
+  </div>
+
+</div>
+

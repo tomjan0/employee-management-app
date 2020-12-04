@@ -9,13 +9,13 @@ import {environment} from '../environments/environment';
 import {AngularFireAnalyticsModule} from '@angular/fire/analytics';
 import {AngularFireAuthModule} from '@angular/fire/auth';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
-import {SignInComponent} from './modules/authentication/sign-in/sign-in.component';
 import {AngularFireFunctionsModule} from '@angular/fire/functions';
+import {MaterialModule} from './material.module';
+import {AuthenticationModule} from './modules/authentication/authentication.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    SignInComponent
   ],
   imports: [
     BrowserModule,
@@ -26,6 +26,8 @@ import {AngularFireFunctionsModule} from '@angular/fire/functions';
     AngularFireFunctionsModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    MaterialModule,
+    AuthenticationModule
   ],
   providers: [],
   bootstrap: [AppComponent]
