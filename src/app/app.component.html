@@ -1,1 +1,39 @@
-<router-outlet></router-outlet>
+<div class="page-wrapper">
+  <mat-toolbar class="custom-toolbar">
+    <a routerLink="/">Aplikacja do zarządzania pracownikami</a>
+    <span class="example-spacer"></span>
+    <button *ngIf="authService.user | async; else elseBlock" mat-icon-button [matMenuTriggerFor]="menu"
+            aria-label="Icon button to trigger user menu">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>exit_to_app</mat-icon>
+        <span>Wyloguj</span>
+      </button>
+      <!--      <ng-template #elseBlock>-->
+      <!--        <button routerLink="/sign-in" mat-menu-item>-->
+      <!--          <mat-icon>login</mat-icon>-->
+      <!--          <span>Zaloguj</span>-->
+      <!--        </button>-->
+      <!--      </ng-template>-->
+      <!--      <button mat-menu-item disabled>-->
+      <!--        <mat-icon>voicemail</mat-icon>-->
+      <!--        <span>Check voice mail</span>-->
+      <!--      </button>-->
+      <!--      <button mat-menu-item>-->
+      <!--        <mat-icon>notifications_off</mat-icon>-->
+      <!--        <span>Disable alerts</span>-->
+      <!--      </button>-->
+    </mat-menu>
+    <ng-template #elseBlock>
+      <button routerLink="/sign-in" mat-raised-button color="primary"
+              aria-label="Button redirecting to sign in page">
+        Zaloguj się
+      </button>
+    </ng-template>
+  </mat-toolbar>
+  <div class="router-wrapper">
+    <router-outlet></router-outlet>
+  </div>
+</div>

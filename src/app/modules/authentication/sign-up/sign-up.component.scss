@@ -1,0 +1,68 @@
+@import "src/styles/variables";
+
+:host {
+  width: 100%;
+  @extend .container-inner;
+}
+
+.container-inner {
+  max-width: 20em;
+  display: flex;
+  flex-direction: column;
+  border-radius: $radius;
+  padding: 2em;
+  box-shadow: $shadow-md;
+  background: linear-gradient(to top right, $gray-100, $gray-200);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+
+  button[type=submit] {
+    font-size: 1em;
+    padding: .25em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+  a {
+    margin-top: 1em;
+    font-size: .75em;
+    text-align: center;
+    color: $gray-500;
+
+    &:visited {
+      color: $gray-500
+    }
+  }
+
+}
+
+mat-spinner {
+  align-self: center;
+  margin: 1em;
+  //margin: 1em 1em .5em 1em;
+}
+
+.bottom-section {
+  padding-top: 1em;
+  //margin-top: 1em;
+  border-top: 1px solid $gray-400;
+  display: flex;
+  flex-direction: column;
+
+  h2 {
+    padding: 0 2em;
+    line-height: 1.5em;
+    font-size: .85em;
+    text-align: center;
+    color: $gray-700;
+  }
+
+  a {
+    padding: .25em;
+    font-size: 1em;
+  }
+
+}

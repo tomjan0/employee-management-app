@@ -1,0 +1,42 @@
+@import "src/styles/variables";
+
+.page-wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.router-wrapper {
+  background-color: $gray-100;
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000' fill-opacity='0.1'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-grow: 1;
+  //height: 100%;
+  animation: bg-test 4s linear infinite;
+}
+
+.example-spacer {
+  flex: 1 1 auto;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+@keyframes bg-test {
+  from {
+    background-position-x: 0;
+    background-position-y: 0;
+  }
+  to {
+    background-position-x: 80px;
+    background-position-y: -80px;
+  }
+}
+
+.custom-toolbar {
+  background: linear-gradient(to right, $gray-100, $gray-200);
+}
+

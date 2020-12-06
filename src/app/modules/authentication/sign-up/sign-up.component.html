@@ -1,1 +1,46 @@
-<p>sign-up works!</p>
+<!--<div class="container-inner">-->
+  <form [formGroup]="signInForm" (ngSubmit)="signUp()">
+    <mat-form-field appearance="standard">
+      <mat-label>E-mail</mat-label>
+      <input matInput formControlName="email" required>
+      <mat-error *ngIf="email.invalid">{{getErrorMessage(email)}}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="standard">
+      <mat-label>Hasło</mat-label>
+      <input matInput [type]="hide ? 'password' : 'text'" formControlName="password" required>
+      <button type="button" mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="hide">
+        <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </button>
+      <mat-error *ngIf="password.invalid">{{getErrorMessage(password)}}</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+      <mat-label>Potwierdź hasło</mat-label>
+      <input matInput [type]="hide ? 'password' : 'text'" formControlName="confirmPassword" required>
+      <mat-error *ngIf="confirmPassword.invalid">{{getErrorMessage(confirmPassword)}}</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+      <mat-label>Pseudonim</mat-label>
+      <input matInput formControlName="username">
+      <mat-hint>To ustawienie możesz później zmienić</mat-hint>
+      <!--        <mat-error *ngIf="email">{{getErrorMessage(email)}}</mat-error>-->
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+      <mat-label>Nazwa organizacji</mat-label>
+      <input matInput formControlName="organizationName" required>
+      <!--        <mat-hint>To ustawienie możesz później zmienić</mat-hint>-->
+      <mat-error *ngIf="organizationName.invalid">{{getErrorMessage(organizationName)}}</mat-error>
+    </mat-form-field>
+    <button [attr.aria-label]="'Sign in'" type="submit"
+            [disabled]="!signInForm.valid || isInProgress"
+            mat-raised-button color="primary">Zarejestruj
+    </button>
+    <mat-spinner [diameter]="32" *ngIf="isInProgress"></mat-spinner>
+  </form>
+  <section class="bottom-section" *ngIf="!isInProgress">
+    <h2>Posiadasz już konto?</h2>
+    <a routerLink="/sign-in" mat-button color="accent">Przejdź do logowania</a>
+  </section>
+<!--</div>-->
+
