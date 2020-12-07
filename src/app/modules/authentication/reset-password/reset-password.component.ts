@@ -1,21 +1,24 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ProcessingStatuses} from '../AuthEnums';
 import {AuthService} from '../../../core/services/auth.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {SnackService} from '../../../core/services/snack.service';
+import {takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 
 @Component({
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })
-export class ResetPasswordComponent implements OnInit {
+export class ResetPasswordComponent implements OnInit, OnDestroy {
   email = new FormControl('', [Validators.required, Validators.email]);
   resetPasswordForm = new FormGroup({email: this.email});
   hide = true;
   processingStatuses = ProcessingStatuses;
   status = this.processingStatuses.NotStarted;
+  private ngUnsubscribe: Subject<boolean> = new Subject();
 
 
   constructor(
@@ -27,6 +30,13 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.route.queryParams
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(params => {
+      if (params.email) {
+        this.email.setValue(params.email);
+      }
+    });
 
   }
 
@@ -71,6 +81,11 @@ export class ResetPasswordComponent implements OnInit {
         }
       }
     }
+  }
+
+  ngOnDestroy(): void {
+    this.ngUnsubscribe.next(true);
+    this.ngUnsubscribe.complete();
   }
 
 
