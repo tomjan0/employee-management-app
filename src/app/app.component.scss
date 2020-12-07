@@ -40,3 +40,17 @@ a:hover {
   background: linear-gradient(to right, $gray-100, $gray-200);
 }
 
+.side-nav-cont {
+  flex: 1;
+
+  &.is-mobile {
+    flex: 1 0 auto;
+  }
+
+  .sidenav {
+    background: linear-gradient(to bottom right, $gray-100, $gray-200);
+  }
+}
+
+
+

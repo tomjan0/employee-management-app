@@ -1,6 +1,8 @@
 <div class="page-wrapper">
   <mat-toolbar class="custom-toolbar">
-    <a routerLink="/">Aplikacja do zarządzania pracownikami</a>
+    <button mat-icon-button (click)="sidenav.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
     <span class="example-spacer"></span>
     <button *ngIf="authService.user | async; else elseBlock" mat-icon-button [matMenuTriggerFor]="menu"
             aria-label="Icon button to trigger user menu">
@@ -27,13 +29,19 @@
       <!--      </button>-->
     </mat-menu>
     <ng-template #elseBlock>
-      <button routerLink="/sign-in" mat-raised-button color="primary"
+      <button routerLink="/auth/sign-in" mat-raised-button color="primary"
               aria-label="Button redirecting to sign in page">
         Zaloguj się
       </button>
     </ng-template>
   </mat-toolbar>
-  <div class="router-wrapper">
-    <router-outlet></router-outlet>
-  </div>
+  <mat-sidenav-container class="side-nav-cont" [class.is-mobile]="mobileQuery.matches">
+    <mat-sidenav class="sidenav" opened #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'"
+                 [fixedInViewport]="mobileQuery.matches">
+      <div style="margin-top:56px;width: 200px; text-align: center">Sidenav </div>
+    </mat-sidenav>
+    <mat-sidenav-content class="router-wrapper">
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
 </div>
