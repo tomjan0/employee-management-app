@@ -1,10 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {AuthService} from '../../../core/services/auth.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import RegisterFormModel from '../../../shared/models/register-form.model';
 import {ProcessingStatuses} from '../AuthEnums';
 import {Router} from '@angular/router';
+import {SnackService} from '../../../core/services/snack.service';
 
 @Component({
   selector: 'app-sign-up',
@@ -29,7 +29,7 @@ export class SignUpComponent implements OnInit {
   processingStatuses = ProcessingStatuses;
   status = this.processingStatuses.NotStarted;
 
-  constructor(private authService: AuthService, private snackBar: MatSnackBar, private router: Router) {
+  constructor(private authService: AuthService, private snackService: SnackService, private router: Router) {
     this.signUpForm.setValidators(this.passwordMatchValidatorFactory(this.password, this.confirmPassword));
   }
 
@@ -78,7 +78,7 @@ export class SignUpComponent implements OnInit {
       this.status = this.processingStatuses.InProgress;
       try {
         await this.authService.createAccount(this.signUpForm.value as RegisterFormModel);
-        this.snackBar.open('Konto utworzone pomyślnie!')._dismissAfter(5000);
+        this.snackService.successSnack('Konto utworzone pomyślnie!');
         this.status = this.processingStatuses.Succeeded;
         await this.router.navigateByUrl('/');
       } catch (authError) {
@@ -96,7 +96,7 @@ export class SignUpComponent implements OnInit {
             break;
           }
           default: {
-            this.snackBar.open('Wystąpił błąd')._dismissAfter(5000);
+            this.snackService.errorSnack('Wystąpił błąd');
             break;
           }
         }

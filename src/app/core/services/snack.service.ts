@@ -26,4 +26,8 @@ export class SnackService {
     };
     this.snackbar.openFromComponent(CustomSnackComponent, {duration, data: JSON.stringify(data)});
   }
+
+  get raw(): MatSnackBar {
+    return this.snackbar;
+  }
 }

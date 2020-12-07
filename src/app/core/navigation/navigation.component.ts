@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {SnackService} from '../services/snack.service';
+import {AuthService} from '../services/auth.service';
 
 @Component({
   selector: 'app-navigation',
@@ -8,14 +8,10 @@ import {SnackService} from '../services/snack.service';
 })
 export class NavigationComponent implements OnInit {
 
-  constructor(private snackService: SnackService) {
+  constructor(public authService: AuthService) {
   }
 
   ngOnInit(): void {
-  }
-
-  testSnack(): void {
-    this.snackService.successSnack('test',  2000);
   }
 
 }

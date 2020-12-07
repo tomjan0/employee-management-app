@@ -2,8 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ProcessingStatuses} from '../AuthEnums';
 import {AuthService} from '../../../core/services/auth.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {ActivatedRoute, Router} from '@angular/router';
+import {SnackService} from '../../../core/services/snack.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -20,7 +20,7 @@ export class ResetPasswordComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private snackBar: MatSnackBar,
+    private snackService: SnackService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -51,7 +51,7 @@ export class ResetPasswordComponent implements OnInit {
       try {
         await this.authService.resetPassword(this.resetPasswordForm.value.email);
         this.status = this.processingStatuses.Succeeded;
-        this.snackBar.open('Link do zresetowania hasła został wysłany na podany adres email.')._dismissAfter(5000);
+        this.snackService.successSnack('Link do zresetowania hasła został wysłany na podany adres email.');
         await this.router.navigate(['..', 'sign-in'], {relativeTo: this.route});
       } catch (authError) {
         console.log(authError);
@@ -65,7 +65,7 @@ export class ResetPasswordComponent implements OnInit {
             break;
           }
           default: {
-            this.snackBar.open('Wystąpił błąd')._dismissAfter(5000);
+            this.snackService.errorSnack('Wystąpił błąd');
             break;
           }
         }
