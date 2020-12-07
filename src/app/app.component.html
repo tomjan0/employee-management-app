@@ -4,7 +4,7 @@
       <mat-icon>menu</mat-icon>
     </button>
     <span class="example-spacer"></span>
-    <button *ngIf="authService.user | async; else elseBlock" mat-icon-button [matMenuTriggerFor]="menu"
+    <button *ngIf="authService.user | async" mat-icon-button [matMenuTriggerFor]="menu"
             aria-label="Icon button to trigger user menu">
       <mat-icon>account_circle</mat-icon>
     </button>
@@ -28,17 +28,17 @@
       <!--        <span>Disable alerts</span>-->
       <!--      </button>-->
     </mat-menu>
-    <ng-template #elseBlock>
-      <button routerLink="/auth/sign-in" mat-raised-button color="primary"
-              aria-label="Button redirecting to sign in page">
-        Zaloguj się
-      </button>
-    </ng-template>
+<!--    <ng-template #elseBlock>-->
+<!--      <button routerLink="/auth/sign-in" mat-raised-button color="primary"-->
+<!--              aria-label="Button redirecting to sign in page">-->
+<!--        Zaloguj się-->
+<!--      </button>-->
+<!--    </ng-template>-->
   </mat-toolbar>
   <mat-sidenav-container class="side-nav-cont" [class.is-mobile]="mobileQuery.matches">
-    <mat-sidenav class="sidenav" opened #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'"
+    <mat-sidenav class="sidenav" [opened]="!mobileQuery.matches" #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'"
                  [fixedInViewport]="mobileQuery.matches">
-      <div style="margin-top:56px;width: 200px; text-align: center">Sidenav </div>
+      <app-navigation></app-navigation>
     </mat-sidenav>
     <mat-sidenav-content class="router-wrapper">
       <router-outlet></router-outlet>

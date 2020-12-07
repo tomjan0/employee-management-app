@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
 import {AuthService} from './core/services/auth.service';
 import {MediaMatcher} from '@angular/cdk/layout';
 
@@ -7,9 +7,10 @@ import {MediaMatcher} from '@angular/cdk/layout';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
   mobileQuery: MediaQueryList;
-  private mobileQueryListener: () => any;
+  title = 'employee-management-app';
+  private readonly mobileQueryListener: () => any;
 
   constructor(public authService: AuthService, private media: MediaMatcher, changeDetectorRef: ChangeDetectorRef) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
@@ -19,6 +20,10 @@ export class AppComponent {
 
   logout(): void {
     this.authService.signOut();
+  }
+
+  ngOnDestroy(): void {
+    this.mobileQuery.removeEventListener('change', this.mobileQueryListener);
   }
 
 }

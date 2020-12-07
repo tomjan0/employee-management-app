@@ -1,1 +1,5 @@
-
+<mat-nav-list>
+  <a mat-list-item routerLink="/auth/sign-in" matRipple><mat-icon>login</mat-icon>Logowanie</a>
+  <a mat-list-item routerLink="/auth/sign-up" matRipple><mat-icon>person</mat-icon>Rejestracja</a>
+  <a mat-list-item (click)="testSnack()" routerLink="/auth/reset-password" matRipple><mat-icon>settings_backup_restore</mat-icon>Resetowanie hasła</a>
+</mat-nav-list>

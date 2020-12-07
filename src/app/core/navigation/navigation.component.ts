@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {SnackService} from '../services/snack.service';
 
 @Component({
   selector: 'app-navigation',
@@ -7,9 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class NavigationComponent implements OnInit {
 
-  constructor() { }
+  constructor(private snackService: SnackService) {
+  }
 
   ngOnInit(): void {
+  }
+
+  testSnack(): void {
+    this.snackService.successSnack('test',  2000);
   }
 
 }
