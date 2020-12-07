@@ -35,7 +35,7 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
     private fb: FormBuilder
   ) {
     this.newPasswordForm = fb.group({
-      password: ['', Validators.required, Validators.minLength(6)],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['']
     });
     this.newPasswordForm.setValidators(this.passwordMatchValidatorFactory(
@@ -62,7 +62,7 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
               this.codeChecked = true;
               this.status = this.ProcessingStatuses.NotStarted;
             } catch (codeError) {
-              this.wrongLink();
+              this.wrongLink(codeError);
             }
             break;
           }
@@ -71,7 +71,7 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
               await this.authService.verifyEmail(this.code);
               this.status = this.ProcessingStatuses.Succeeded;
             } catch (codeError) {
-              this.wrongLink();
+              this.wrongLink(codeError);
             }
             break;
           }
@@ -88,10 +88,19 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
   }
 
-  wrongLink(): void {
-    this.status = ProcessingStatuses.Succeeded;
-    this.snackService.errorSnack('Niepoprawny link', 5000);
-    // this.router.navigate(['..'], {relativeTo: this.route});
+  wrongLink(reason?: any): void {
+    console.log(reason);
+    let message = 'Niepoprawny link';
+    if (reason && reason.code) {
+      switch (reason.code) {
+        case 'auth/expired-action-code':
+          message = 'Link wygasł';
+          break;
+      }
+    }
+    this.status = ProcessingStatuses.Failed;
+    this.snackService.errorSnack(message, 5000);
+    this.router.navigate(['..'], {relativeTo: this.route});
   }
 
 
