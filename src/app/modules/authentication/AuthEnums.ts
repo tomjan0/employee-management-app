@@ -6,3 +6,8 @@ export enum ProcessingStatuses {
   Failed
 }
 
+
+export enum FirebaseActions {
+  ResetPassword = 'resetPassword',
+  VerifyEmail = 'verifyEmail',
+}

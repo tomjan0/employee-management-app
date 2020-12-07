@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
+import {FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {AuthService} from '../../../core/services/auth.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import RegisterFormModel from '../../../shared/models/register-form.model';
@@ -18,7 +18,7 @@ export class SignUpComponent implements OnInit {
   confirmPassword = new FormControl('');
   username = new FormControl('');
   organizationName = new FormControl('', [Validators.required]);
-  signInForm = new FormGroup({
+  signUpForm = new FormGroup({
     email: this.email,
     password: this.password,
     confirmPassword: this.confirmPassword,
@@ -30,7 +30,7 @@ export class SignUpComponent implements OnInit {
   status = this.processingStatuses.NotStarted;
 
   constructor(private authService: AuthService, private snackBar: MatSnackBar, private router: Router) {
-    this.signInForm.setValidators(this.passwordMatchValidatorFactory(this.password, this.confirmPassword));
+    this.signUpForm.setValidators(this.passwordMatchValidatorFactory(this.password, this.confirmPassword));
   }
 
   ngOnInit(): void {
@@ -74,15 +74,14 @@ export class SignUpComponent implements OnInit {
   }
 
   async signUp(): Promise<void> {
-    if (this.signInForm.valid) {
+    if (this.signUpForm.valid) {
       this.status = this.processingStatuses.InProgress;
       try {
-        await this.authService.createAccount(this.signInForm.value as RegisterFormModel);
-        this.status = this.processingStatuses.Succeeded;
+        await this.authService.createAccount(this.signUpForm.value as RegisterFormModel);
         this.snackBar.open('Konto utworzone pomyślnie!')._dismissAfter(5000);
+        this.status = this.processingStatuses.Succeeded;
         await this.router.navigateByUrl('/');
       } catch (authError) {
-        console.log(authError);
         switch (authError.code) {
           case 'auth/email-already-in-use': {
             this.email.setErrors({alreadyExists: true});

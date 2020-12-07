@@ -1,5 +1,6 @@
 <!--<div class="container-inner">-->
-  <form [formGroup]="signInForm" (ngSubmit)="signUp()">
+<h1>Rejestracja</h1>
+  <form [formGroup]="signUpForm" (ngSubmit)="signUp()">
     <mat-form-field appearance="standard">
       <mat-label>E-mail</mat-label>
       <input matInput formControlName="email" required>
@@ -33,14 +34,14 @@
       <mat-error *ngIf="organizationName.invalid">{{getErrorMessage(organizationName)}}</mat-error>
     </mat-form-field>
     <button [attr.aria-label]="'Sign in'" type="submit"
-            [disabled]="!signInForm.valid || isInProgress"
+            [disabled]="!signUpForm.valid || isInProgress"
             mat-raised-button color="primary">Zarejestruj
     </button>
     <mat-spinner [diameter]="32" *ngIf="isInProgress"></mat-spinner>
   </form>
   <section class="bottom-section" *ngIf="!isInProgress">
     <h2>Posiadasz już konto?</h2>
-    <a routerLink="/sign-in" mat-button color="accent">Przejdź do logowania</a>
+    <a routerLink="../sign-in" mat-button color="accent">Przejdź do logowania</a>
   </section>
 <!--</div>-->
 

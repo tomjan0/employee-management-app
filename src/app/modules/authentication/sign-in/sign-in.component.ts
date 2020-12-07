@@ -54,9 +54,10 @@ export class SignInComponent implements OnInit {
   async signIn(): Promise<void> {
     if (this.signInForm.valid) {
       try {
+        this.status = this.processingStatuses.InProgress;
         await this.authService.signIn(this.signInForm.value.email, this.signInForm.value.password);
-        this.status = this.processingStatuses.Succeeded;
         this.snackBar.open('Zalogowano pomyślnie!')._dismissAfter(5000);
+        this.status = this.processingStatuses.Succeeded;
         await this.router.navigateByUrl('/');
       } catch (authError) {
         console.log(authError);
@@ -82,8 +83,13 @@ export class SignInComponent implements OnInit {
             break;
           }
         }
+        this.status = this.processingStatuses.Failed;
       }
     }
+  }
+
+  get isInProgress(): boolean {
+    return this.status === this.processingStatuses.InProgress;
   }
 
 }

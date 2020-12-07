@@ -1,0 +1,35 @@
+<ng-container [ngSwitch]="mode">
+  <form *ngSwitchCase="FirebaseActions.ResetPassword" [formGroup]="newPasswordForm" (ngSubmit)="setPassword()">
+    <h2>Zmiana hasła dla <b>{{email}}</b></h2>
+    <mat-form-field appearance="standard">
+      <mat-label>Nowe hasło</mat-label>
+      <input matInput [type]="passwordHidden ? 'password' : 'text'" formControlName="password" required>
+      <button type="button" mat-icon-button matSuffix (click)="passwordHidden = !passwordHidden"
+              [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="passwordHidden">
+        <mat-icon>{{passwordHidden ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </button>
+      <mat-error *ngIf="controls.password.invalid">{{getErrorMessage(controls.password)}}</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+      <mat-label>Potwierdź hasło</mat-label>
+      <input matInput [type]="passwordHidden ? 'password' : 'text'" formControlName="confirmPassword" required>
+      <mat-error *ngIf="controls.confirmPassword.invalid">{{getErrorMessage(controls.confirmPassword)}}</mat-error>
+    </mat-form-field>
+    <button [attr.aria-label]="'Sign in'" type="submit"
+            [disabled]="!newPasswordForm.valid || isInProgress"
+            mat-raised-button color="primary">Zmień hasło
+    </button>
+  </form>
+  <div *ngSwitchCase="FirebaseActions.VerifyEmail">
+    <div *ngIf="status === ProcessingStatuses.Succeeded">
+      <h1>Twój adres email został pomyślnie zweryfikowany!</h1>
+      <p>Życzymy miłego korzystania z aplikacji.</p>
+    </div>
+  </div>
+</ng-container>
+<mat-spinner [diameter]="32" *ngIf="isInProgress"></mat-spinner>
+<!--<section class="bottom-section" *ngIf="!isInProgress">-->
+<!--  <h2>Posiadasz już konto?</h2>-->
+<!--  <a routerLink="/sign-in" mat-button color="accent">Przejdź do logowania</a>-->
+<!--</section>-->

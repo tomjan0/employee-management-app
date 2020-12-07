@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core';
 import RegisterFormModel from '../../shared/models/register-form.model';
 import {AngularFireAuth} from '@angular/fire/auth';
 import {AngularFirestore} from '@angular/fire/firestore';
-import firebase from 'firebase';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +29,7 @@ export class AuthService {
         username: registerForm.username,
         organizations: [organizationDocument.id]
       });
+      credentials.user?.sendEmailVerification();
     } catch (authError) {
       throw authError;
     }
@@ -45,10 +45,33 @@ export class AuthService {
 
   async resetPassword(email: string): Promise<void> {
     try {
-      await firebase.auth().sendPasswordResetEmail(email);
-      // await this.fireAuth.sendPasswordResetEmail(email);
+      await this.fireAuth.sendPasswordResetEmail(email);
     } catch (authError) {
       throw authError;
+    }
+  }
+
+  async verifyPasswordResetCode(code: string): Promise<string> {
+    try {
+      return await this.fireAuth.verifyPasswordResetCode(code);
+    } catch (codeError) {
+      throw codeError;
+    }
+  }
+
+  async setNewPassword(code: string, password: string): Promise<void> {
+    try {
+      await this.fireAuth.confirmPasswordReset(code, password);
+    } catch (passwordResetError) {
+      throw passwordResetError;
+    }
+  }
+
+  async verifyEmail(code: string): Promise<void> {
+    try {
+      await this.fireAuth.applyActionCode(code);
+    } catch (codeError) {
+      throw codeError;
     }
   }
 

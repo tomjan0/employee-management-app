@@ -1,4 +1,5 @@
 <!--<div class="container-inner">-->
+<h1>Logowanie</h1>
 <form [formGroup]="signInForm" (ngSubmit)="signIn()">
   <mat-form-field appearance="standard">
     <mat-label>Wpisz e-mail</mat-label>
@@ -14,14 +15,16 @@
     </button>
     <mat-error *ngIf="password.invalid">{{getErrorMessage(password)}}</mat-error>
   </mat-form-field>
-  <button [attr.aria-label]="'Sign in'" type="submit" [disabled]="!signInForm.valid"
+  <button [attr.aria-label]="'Sign in'" type="submit"
+          [disabled]="!signInForm.valid || isInProgress"
           mat-raised-button color="primary">Zaloguj
   </button>
-  <a routerLink="/reset-password">Nie pamiętasz hasła?</a>
+  <mat-spinner [diameter]="32" *ngIf="isInProgress"></mat-spinner>
+  <a routerLink="../reset-password">Nie pamiętasz hasła?</a>
 </form>
-<section class="bottom-section">
-  <h2>Nie posiadasz konta i chcesz je założyć dla swojej organizacji?</h2>
-  <a routerLink="/sign-up" mat-button color="accent">Załóż konto firmowe</a>
+<section *ngIf="!isInProgress" class="bottom-section">
+  <h2>Nie posiadasz jeszcze konta i chcesz je założyć dla swojej organizacji?</h2>
+  <a routerLink="../sign-up" mat-button color="accent">Załóż konto firmowe</a>
 </section>
 <!--</div>-->
 

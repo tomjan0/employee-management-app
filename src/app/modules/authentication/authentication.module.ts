@@ -6,10 +6,11 @@ import {ReactiveFormsModule} from '@angular/forms';
 import { SignUpComponent } from './sign-up/sign-up.component';
 import {AppRoutingModule} from '../../app-routing.module';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { ActionsManagerComponent } from './actions-manager/actions-manager.component';
 
 
 @NgModule({
-  declarations: [SignInComponent, SignUpComponent, ResetPasswordComponent],
+  declarations: [SignInComponent, SignUpComponent, ResetPasswordComponent, ActionsManagerComponent],
   exports: [
     SignInComponent
   ],

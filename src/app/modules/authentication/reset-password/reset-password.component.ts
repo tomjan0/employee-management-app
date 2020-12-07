@@ -3,7 +3,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ProcessingStatuses} from '../AuthEnums';
 import {AuthService} from '../../../core/services/auth.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
   selector: 'app-reset-password',
@@ -17,11 +17,17 @@ export class ResetPasswordComponent implements OnInit {
   processingStatuses = ProcessingStatuses;
   status = this.processingStatuses.NotStarted;
 
-  constructor(private authService: AuthService, private snackBar: MatSnackBar, private router: Router) {
-    // this.resetPasswordForm.controls.test.markAsTouched();
+
+  constructor(
+    private authService: AuthService,
+    private snackBar: MatSnackBar,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
   }
 
   ngOnInit(): void {
+
   }
 
   getErrorMessage(field: FormControl): string {
@@ -46,7 +52,7 @@ export class ResetPasswordComponent implements OnInit {
         await this.authService.resetPassword(this.resetPasswordForm.value.email);
         this.status = this.processingStatuses.Succeeded;
         this.snackBar.open('Link do zresetowania hasła został wysłany na podany adres email.')._dismissAfter(5000);
-        await this.router.navigateByUrl('/');
+        await this.router.navigate(['..', 'sign-in'], {relativeTo: this.route});
       } catch (authError) {
         console.log(authError);
         switch (authError.code) {
@@ -66,5 +72,6 @@ export class ResetPasswordComponent implements OnInit {
       }
     }
   }
+
 
 }
