@@ -1,1 +1,19 @@
-<p>availability-edit works!</p>
+<!--<mat-form-field style="position: fixed; bottom: 0; left: 0" appearance="fill">-->
+<!--  <mat-label>Month and Year</mat-label>-->
+<!--  <input matInput [matDatepicker]="dp" [formControl]="date">-->
+<!--  <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>-->
+<!--  <mat-datepicker #dp-->
+<!--                  startView="multi-year"-->
+<!--                  (yearSelected)="chosenYearHandler($event)"-->
+<!--                  (monthSelected)="chosenMonthHandler($event, dp)"-->
+<!--                  panelClass="example-month-picker">-->
+<!--  </mat-datepicker>-->
+<!--</mat-form-field>-->
+<div class="position" *ngFor="let day of days">
+  <div class="day">{{day | date:'EEEE, dd-MM-yy'}}</div>
+  <mat-button-toggle-group multiple>
+    <mat-button-toggle>Rano</mat-button-toggle>
+<!--    <mat-button-toggle>Między</mat-button-toggle>-->
+    <mat-button-toggle >Wieczór</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>

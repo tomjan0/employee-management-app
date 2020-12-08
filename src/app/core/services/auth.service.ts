@@ -32,7 +32,10 @@ export class AuthService {
   async createAccount(registerForm: RegisterFormModel): Promise<void> {
     try {
       const credentials = await this.fireAuth.createUserWithEmailAndPassword(registerForm.email, registerForm.password);
-      await credentials.user?.updateProfile({displayName: registerForm.username});
+      if (registerForm.username) {
+        await credentials.user?.updateProfile({displayName: registerForm.username});
+        this.displayName = registerForm.username;
+      }
       const uid = credentials.user?.uid;
       const organizationDocument = await this.firestore.collection('organizations').add({
         name: registerForm.organizationName,
