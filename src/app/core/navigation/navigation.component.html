@@ -1,6 +1,28 @@
 <mat-nav-list>
-  <a mat-list-item routerLink="/auth/sign-in" matRipple><mat-icon>login</mat-icon>Logowanie</a>
-  <a mat-list-item routerLink="/auth/sign-up" matRipple><mat-icon>person</mat-icon>Rejestracja</a>
-  <a mat-list-item routerLink="/auth/reset-password" matRipple><mat-icon>settings_backup_restore</mat-icon>Resetowanie hasła</a>
+  <ng-container *ngIf="!(authService.user | async) else elseBlock">
+    <div  class="menu-label">Autoryzacja</div>
+    <a mat-list-item routerLink="/auth/sign-in" matRipple>
+      <mat-icon>login</mat-icon>
+      Logowanie</a>
+    <a mat-list-item routerLink="/auth/sign-up" matRipple>
+      <mat-icon>person</mat-icon>
+      Rejestracja</a>
+    <a mat-list-item routerLink="/auth/reset-password" matRipple>
+      <mat-icon>settings_backup_restore</mat-icon>
+      Resetowanie hasła</a>
+  </ng-container>
+  <ng-template #elseBlock>
+    <div class="menu-label">Dyspozycyjność</div>
+    <a mat-list-item routerLink="/availability/view" matRipple>
+      <mat-icon>table_rows</mat-icon>
+      Podgląd</a>
+    <a mat-list-item routerLink="/availability/edit" matRipple>
+      <mat-icon>edit</mat-icon>
+      Edycja</a>
+<!--    <a mat-list-item routerLink="/auth/reset-password" matRipple>-->
+<!--      <mat-icon>settings_backup_restore</mat-icon>-->
+<!--      Resetowanie hasła</a>-->
+
+  </ng-template>
 
 </mat-nav-list>
