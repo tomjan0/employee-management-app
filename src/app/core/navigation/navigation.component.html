@@ -1,27 +1,39 @@
 <mat-nav-list>
   <ng-container *ngIf="!(authService.user | async) else elseBlock">
-    <div  class="menu-label">Autoryzacja</div>
-    <a mat-list-item routerLink="/auth/sign-in" matRipple>
+    <!--    <div class="menu-label">Autoryzacja</div>-->
+    <a mat-list-item disabled>
+      <!--      <mat-icon>lock</mat-icon>-->
+      <span>Autoryzacja</span>
+    </a>
+    <a mat-list-item routerLink="/auth/sign-in" routerLinkActive="active" matRipple>
       <mat-icon>login</mat-icon>
-      Logowanie</a>
-    <a mat-list-item routerLink="/auth/sign-up" matRipple>
+      <span>Logowanie</span>
+    </a>
+    <a mat-list-item routerLink="/auth/sign-up" routerLinkActive="active" matRipple>
       <mat-icon>person</mat-icon>
-      Rejestracja</a>
-    <a mat-list-item routerLink="/auth/reset-password" matRipple>
+      <span>Rejestracja</span>
+    </a>
+    <a mat-list-item routerLink="/auth/reset-password" routerLinkActive="active" matRipple>
       <mat-icon>settings_backup_restore</mat-icon>
-      Resetowanie hasła</a>
+      <span>Resetowanie hasła</span>
+    </a>
   </ng-container>
   <ng-template #elseBlock>
-    <div class="menu-label">Dyspozycyjność</div>
-    <a mat-list-item routerLink="/availability/view" matRipple>
+    <a mat-list-item disabled>
+      <!--      <mat-icon>event</mat-icon>-->
+      <span>Dyspozycyjność</span>
+    </a>
+    <a mat-list-item routerLink="/availability/view" routerLinkActive="active" matRipple>
       <mat-icon>table_rows</mat-icon>
-      Podgląd</a>
-    <a mat-list-item routerLink="/availability/edit" matRipple>
+      <span>Podgląd</span>
+    </a>
+    <a mat-list-item routerLink="/availability/edit" routerLinkActive="active" matRipple>
       <mat-icon>edit</mat-icon>
-      Edycja</a>
-<!--    <a mat-list-item routerLink="/auth/reset-password" matRipple>-->
-<!--      <mat-icon>settings_backup_restore</mat-icon>-->
-<!--      Resetowanie hasła</a>-->
+      <span>Edycja</span>
+    </a>
+    <!--    <a mat-list-item routerLink="/auth/reset-password" matRipple>-->
+    <!--      <mat-icon>settings_backup_restore</mat-icon>-->
+    <!--      Resetowanie hasła</a>-->
 
   </ng-template>
 

@@ -2,22 +2,37 @@ import {Injectable} from '@angular/core';
 import RegisterFormModel from '../../shared/models/register-form.model';
 import {AngularFireAuth} from '@angular/fire/auth';
 import {AngularFirestore} from '@angular/fire/firestore';
+import {Router} from '@angular/router';
+import {SnackService} from './snack.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   user;
+  displayName = '';
 
-  constructor(private fireAuth: AngularFireAuth, private firestore: AngularFirestore) {
+  constructor(private fireAuth: AngularFireAuth,
+              private firestore: AngularFirestore,
+              private router: Router,
+              private snackService: SnackService) {
     fireAuth.useDeviceLanguage();
     this.user = fireAuth.user;
+    this.user.subscribe(user => {
+      this.displayName = user
+        ? user.displayName
+          ? user.displayName
+          : user.email
+            ? user.email
+            : 'Użytkownik'
+        : '';
+    });
   }
 
   async createAccount(registerForm: RegisterFormModel): Promise<void> {
-    console.log(registerForm);
     try {
       const credentials = await this.fireAuth.createUserWithEmailAndPassword(registerForm.email, registerForm.password);
+      await credentials.user?.updateProfile({displayName: registerForm.username});
       const uid = credentials.user?.uid;
       const organizationDocument = await this.firestore.collection('organizations').add({
         name: registerForm.organizationName,
@@ -26,7 +41,7 @@ export class AuthService {
       });
       const userDocument = this.firestore.collection('users').doc(uid);
       await userDocument.set({
-        username: registerForm.username,
+        // username: registerForm.username,
         organizations: [organizationDocument.id]
       });
       credentials.user?.sendEmailVerification();
@@ -77,5 +92,7 @@ export class AuthService {
 
   async signOut(): Promise<void> {
     await this.fireAuth.signOut();
+    await this.router.navigate(['/']);
+    this.snackService.successSnack('Wylogowano pomyślnie!');
   }
 }

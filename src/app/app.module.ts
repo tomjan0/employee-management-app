@@ -13,6 +13,7 @@ import {AngularFireFunctionsModule} from '@angular/fire/functions';
 import {MaterialModule} from './material.module';
 import {AuthenticationModule} from './modules/authentication/authentication.module';
 import {CoreModule} from './core/core.module';
+import {AvailabilityModule} from './modules/availability/availability.module';
 
 @NgModule({
   declarations: [
@@ -29,10 +30,12 @@ import {CoreModule} from './core/core.module';
     BrowserAnimationsModule,
     MaterialModule,
     AuthenticationModule,
+    AvailabilityModule,
     CoreModule
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {
+
 }
