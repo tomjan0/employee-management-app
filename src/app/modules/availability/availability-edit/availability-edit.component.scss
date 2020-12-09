@@ -1,19 +1,110 @@
+@import "src/styles/variables";
+
 :host {
- display: flex;
+  display: flex;
   width: 100%;
   flex-direction: column;
-  margin-top: 2em;
+  //margin-top: 2em;
+  padding: 1em;
 }
 
+.controls-bar {
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 
-.day {
-  font-size: 1em;
-  font-weight: 600;
-  margin-right: 2em;
+  .view-toggles {
+    position: absolute;
+    right: 0;
+    display: flex;
+  }
+
+  .month-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 1.25em;
+
+    .month-title {
+      text-transform: capitalize;
+    }
+  }
+}
+
+.positions {
+  display: flex;
+  max-width: 1600px;
+  margin: auto;
+
+  &.list-view {
+    flex-direction: column;
+    align-items: center;
+
+    &.is-mobile {
+      .position {
+        width: 100%;
+      }
+    }
+  }
+
+
+  &.grid-view {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
 }
 
 .position {
   display: flex;
-  justify-content: center;
+  //justify-content: center;
+  flex-direction: column;
   align-items: center;
+  margin: .5em;
+  background-color: white;
+  border-radius: 6px;
+  font-weight: 500;
+  width: fit-content;
+  padding: 1em 2em;
+  box-shadow: $shadow-md;
+
+  &.expired {
+    //filter: opacity(.5);
+    opacity: .5;
+  }
+
+  .position-header {
+    //font-size: 1.1em;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    background-color: $green-500;
+    color: $gray-100;
+    border-radius: 6px;
+    padding: .5em;
+    min-width: 12em;
+
+    &.sunday {
+      background-color: $red-500;
+    }
+
+    &.saturday {
+      background-color: $yellow-500;
+    }
+
+    //.date {
+    //  border-right: 1px solid black;
+    //}
+
+    .day {
+      text-transform: capitalize;
+    }
+  }
+
+  .shift-toggles {
+    margin-top: 1em;
+  }
 }

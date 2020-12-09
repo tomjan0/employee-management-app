@@ -1,19 +1,34 @@
-<!--<mat-form-field style="position: fixed; bottom: 0; left: 0" appearance="fill">-->
-<!--  <mat-label>Month and Year</mat-label>-->
-<!--  <input matInput [matDatepicker]="dp" [formControl]="date">-->
-<!--  <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>-->
-<!--  <mat-datepicker #dp-->
-<!--                  startView="multi-year"-->
-<!--                  (yearSelected)="chosenYearHandler($event)"-->
-<!--                  (monthSelected)="chosenMonthHandler($event, dp)"-->
-<!--                  panelClass="example-month-picker">-->
-<!--  </mat-datepicker>-->
-<!--</mat-form-field>-->
-<div class="position" *ngFor="let day of days">
-  <div class="day">{{day | date:'EEEE, dd-MM-yy'}}</div>
-  <mat-button-toggle-group multiple>
-    <mat-button-toggle>Rano</mat-button-toggle>
-<!--    <mat-button-toggle>Między</mat-button-toggle>-->
-    <mat-button-toggle >Wieczór</mat-button-toggle>
+<div class="controls-bar">
+  <div class="month-controls">
+    <button mat-icon-button (click)="prevMonth()">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <div class="month-title">{{date | date:'MMM yyyy'}}</div>
+    <button mat-icon-button (click)="nextMonth()">
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+  </div>
+  <mat-button-toggle-group class="view-toggles" (change)="handleViewModeChange($event)" [value]="viewMode">
+    <mat-button-toggle value="list" aria-label="Text align left">
+      <mat-icon>view_list</mat-icon>
+    </mat-button-toggle>
+    <mat-button-toggle value="grid" aria-label="Text align center">
+      <mat-icon>view_module</mat-icon>
+    </mat-button-toggle>
   </mat-button-toggle-group>
+</div>
+<div class="positions" [class.is-mobile]="isMobile" [class.list-view]="viewMode === 'list'" [class.grid-view]="viewMode === 'grid'">
+  <div class="position" [class.expired]="pos.past" *ngFor="let pos of data; index as i">
+    <div class="position-header" [class.sunday]="pos.date.getDay() === 0"
+         [class.saturday]="pos.date.getDay() === 6">
+      <div class="day" >{{pos.date | date:'EEEE'}}</div>
+      <div class="date">{{pos.date | date:'shortDate'}}</div>
+    </div>
+    <mat-button-toggle-group class="shift-toggles" [vertical]="viewMode === 'grid'" [disabled]="pos.past" [value]="pos.shifts"
+                             (change)="handleAvailabilityChange($event, i)" multiple>
+      <mat-button-toggle value="first">Otwarcie</mat-button-toggle>
+      <mat-button-toggle value="middle">Międzyzmiana</mat-button-toggle>
+      <mat-button-toggle value="second">Zamknięcie</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
 </div>
