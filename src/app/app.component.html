@@ -1,50 +1,37 @@
 <div class="page-wrapper">
-  <mat-toolbar class="custom-toolbar">
-    <button mat-icon-button (click)="sidenav.toggle()">
-      <mat-icon>menu</mat-icon>
-    </button>
-    <span class="example-spacer"></span>
-    <div *ngIf="authService.user | async">
-      <span>{{(authService.displayName)}}</span>
-      <button mat-icon-button [matMenuTriggerFor]="menu"
-              aria-label="Icon button to trigger user menu">
-        <mat-icon>account_circle</mat-icon>
+  <ng-container *ngIf="ready; else elseBlock">
+    <mat-toolbar class="custom-toolbar">
+      <button mat-icon-button (click)="sidenav.toggle()">
+        <mat-icon>menu</mat-icon>
       </button>
-    </div>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="logout()">
-        <mat-icon>exit_to_app</mat-icon>
-        <span>Wyloguj</span>
-      </button>
-      <!--      <ng-template #elseBlock>-->
-      <!--        <button routerLink="/sign-in" mat-menu-item>-->
-      <!--          <mat-icon>login</mat-icon>-->
-      <!--          <span>Zaloguj</span>-->
-      <!--        </button>-->
-      <!--      </ng-template>-->
-      <!--      <button mat-menu-item disabled>-->
-      <!--        <mat-icon>voicemail</mat-icon>-->
-      <!--        <span>Check voice mail</span>-->
-      <!--      </button>-->
-      <!--      <button mat-menu-item>-->
-      <!--        <mat-icon>notifications_off</mat-icon>-->
-      <!--        <span>Disable alerts</span>-->
-      <!--      </button>-->
-    </mat-menu>
-    <!--    <ng-template #elseBlock>-->
-    <!--      <button routerLink="/auth/sign-in" mat-raised-button color="primary"-->
-    <!--              aria-label="Button redirecting to sign in page">-->
-    <!--        Zaloguj się-->
-    <!--      </button>-->
-    <!--    </ng-template>-->
-  </mat-toolbar>
-  <mat-sidenav-container class="side-nav-cont" [class.is-mobile]="mobileQuery.matches">
-    <mat-sidenav class="sidenav" [opened]="!mobileQuery.matches" #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'"
-                 [fixedInViewport]="mobileQuery.matches">
-      <app-navigation></app-navigation>
-    </mat-sidenav>
-    <mat-sidenav-content class="router-wrapper">
-      <router-outlet></router-outlet>
-    </mat-sidenav-content>
-  </mat-sidenav-container>
+      <span class="example-spacer"></span>
+      <div *ngIf="authService.userObs | async">
+        <span>{{authService.displayName}}@{{dataService.organizationName}}</span>
+        <button mat-icon-button [matMenuTriggerFor]="menu"
+                aria-label="Icon button to trigger user menu">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+      </div>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>exit_to_app</mat-icon>
+          <span>Wyloguj</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+    <mat-sidenav-container class="side-nav-cont" [class.is-mobile]="mobileQuery.matches">
+      <mat-sidenav class="sidenav" [(opened)]="navOpen" (openedChange)="handleOpenChange($event)" #sidenav id="'sidenav'"
+                   [mode]="mobileQuery.matches ? 'over' : 'side'"
+                   [fixedInViewport]="mobileQuery.matches">
+        <app-navigation></app-navigation>
+      </mat-sidenav>
+      <mat-sidenav-content class="router-wrapper">
+        <router-outlet></router-outlet>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+  </ng-container>
+  <ng-template #elseBlock>
+    <mat-spinner></mat-spinner>
+  </ng-template>
+
 </div>

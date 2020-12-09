@@ -16,6 +16,7 @@ import {MatChipsModule} from '@angular/material/chips';
 import {MatCardModule} from '@angular/material/card';
 import {MatSelectModule} from '@angular/material/select';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import {MatTableModule} from '@angular/material/table';
 
 const materialModules = [
   MatFormFieldModule,
@@ -34,7 +35,8 @@ const materialModules = [
   MatCardModule,
   MatSelectModule,
   MatOptionModule,
-  MatButtonToggleModule
+  MatButtonToggleModule,
+  MatTableModule
 ];
 
 @NgModule({

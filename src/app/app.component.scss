@@ -5,6 +5,11 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: $gray-100;
+
+  mat-spinner {
+    margin: auto;
+  }
 }
 
 .router-wrapper {

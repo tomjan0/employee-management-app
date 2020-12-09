@@ -4,29 +4,34 @@ import {AngularFireAuth} from '@angular/fire/auth';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {Router} from '@angular/router';
 import {SnackService} from './snack.service';
+import firebase from 'firebase/app';
+import {DataService} from './data.service';
+import User = firebase.User;
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  user;
-  displayName = '';
+  userObs;
+  user: User | null = null;
 
   constructor(private fireAuth: AngularFireAuth,
               private firestore: AngularFirestore,
               private router: Router,
-              private snackService: SnackService) {
+              private snackService: SnackService,
+              private dataService: DataService) {
     fireAuth.useDeviceLanguage();
-    this.user = fireAuth.user;
-    this.user.subscribe(user => {
-      this.displayName = user
-        ? user.displayName
-          ? user.displayName
-          : user.email
-            ? user.email
-            : 'Użytkownik'
-        : '';
+    this.userObs = fireAuth.user;
+    this.userObs.subscribe(user => {
+      this.user = user;
+      if (user) {
+        dataService.loadUserData(user.uid);
+      }
     });
+  }
+
+  get displayName(): string | null | undefined {
+    return this.user?.displayName;
   }
 
   async createAccount(registerForm: RegisterFormModel): Promise<void> {
@@ -34,7 +39,6 @@ export class AuthService {
       const credentials = await this.fireAuth.createUserWithEmailAndPassword(registerForm.email, registerForm.password);
       if (registerForm.username) {
         await credentials.user?.updateProfile({displayName: registerForm.username});
-        this.displayName = registerForm.username;
       }
       const uid = credentials.user?.uid;
       const organizationDocument = await this.firestore.collection('organizations').add({

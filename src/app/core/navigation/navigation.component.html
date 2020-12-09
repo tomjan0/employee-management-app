@@ -1,8 +1,6 @@
 <mat-nav-list>
-  <ng-container *ngIf="!(authService.user | async) else elseBlock">
-    <!--    <div class="menu-label">Autoryzacja</div>-->
+  <ng-container *ngIf="!(authService.userObs | async) else elseBlock">
     <a mat-list-item disabled>
-      <!--      <mat-icon>lock</mat-icon>-->
       <span>Autoryzacja</span>
     </a>
     <a mat-list-item routerLink="/auth/sign-in" routerLinkActive="active" matRipple>
@@ -20,7 +18,6 @@
   </ng-container>
   <ng-template #elseBlock>
     <a mat-list-item disabled>
-      <!--      <mat-icon>event</mat-icon>-->
       <span>Dyspozycyjność</span>
     </a>
     <a mat-list-item routerLink="/availability/view" routerLinkActive="active" matRipple>
@@ -31,10 +28,5 @@
       <mat-icon>edit</mat-icon>
       <span>Edycja</span>
     </a>
-    <!--    <a mat-list-item routerLink="/auth/reset-password" matRipple>-->
-    <!--      <mat-icon>settings_backup_restore</mat-icon>-->
-    <!--      Resetowanie hasła</a>-->
-
   </ng-template>
-
 </mat-nav-list>
