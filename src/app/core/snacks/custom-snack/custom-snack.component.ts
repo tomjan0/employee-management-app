@@ -10,7 +10,6 @@ import SnackTypes from '../../enums/snack-types.enum';
 export class CustomSnackComponent implements OnInit {
   private data;
   public type;
-  SnackTypes = SnackTypes;
 
   constructor(@Inject(MAT_SNACK_BAR_DATA) data: string) {
     this.data = JSON.parse(data);
@@ -30,6 +29,24 @@ export class CustomSnackComponent implements OnInit {
         return 'check_circle';
       case SnackTypes.Error:
         return 'error';
+      case SnackTypes.Warning:
+        return 'warning';
+      case SnackTypes.Info:
+        return 'info';
+    }
+    return '';
+  }
+
+  get class(): string {
+    switch (this.type) {
+      case SnackTypes.Success:
+        return 'success';
+      case SnackTypes.Error:
+        return 'error';
+      case SnackTypes.Warning:
+        return 'warning';
+      case SnackTypes.Info:
+        return 'info';
     }
     return '';
   }

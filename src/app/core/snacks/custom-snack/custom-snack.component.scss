@@ -1,3 +1,5 @@
+@import "src/styles/variables";
+
 mat-icon {
   font-size: 2em;
   line-height: inherit;
@@ -17,15 +19,26 @@ mat-icon {
 
   &.success {
     mat-icon {
-      color: green;
+      color: $green-500;
     }
   }
 
   &.error {
     mat-icon {
-      color: red;
+      color: $red-500;
     }
+  }
 
+  &.warning {
+    mat-icon {
+      color: $yellow-500;
+    }
+  }
+
+  &.info {
+    mat-icon {
+      color: $blue-500;
+    }
   }
 }
 

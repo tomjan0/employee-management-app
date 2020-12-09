@@ -1,6 +1,6 @@
 <div>
   <div class="message">{{message}}</div>
-  <div class="icon-container" [class.success]="type === SnackTypes.Success" [class.error]="type === SnackTypes.Error">
+  <div class="icon-container" [ngClass]="class">
     <mat-icon>{{icon}}</mat-icon>
   </div>
 </div>
