@@ -8,7 +8,8 @@
       <mat-icon>keyboard_arrow_right</mat-icon>
     </button>
   </div>
-  <mat-button-toggle-group class="view-toggles" (change)="handleViewModeChange($event)" [value]="viewMode">
+  <mat-button-toggle-group [vertical]="isMobile" class="view-toggles" (change)="handleViewModeChange($event)"
+                           [value]="viewMode">
     <mat-button-toggle value="list" aria-label="Text align left">
       <mat-icon>view_list</mat-icon>
     </mat-button-toggle>
@@ -17,18 +18,24 @@
     </mat-button-toggle>
   </mat-button-toggle-group>
 </div>
-<div class="positions" [class.is-mobile]="isMobile" [class.list-view]="viewMode === 'list'" [class.grid-view]="viewMode === 'grid'">
-  <div class="position" [class.expired]="pos.past" *ngFor="let pos of data; index as i">
-    <div class="position-header" [class.sunday]="pos.date.getDay() === 0"
-         [class.saturday]="pos.date.getDay() === 6">
-      <div class="day" >{{pos.date | date:'EEEE'}}</div>
-      <div class="date">{{pos.date | date:'shortDate'}}</div>
+<div class="positions" [class.is-mobile]="isMobile" [class.list-view]="viewMode === 'list'"
+     [class.grid-view]="viewMode === 'grid'">
+  <ng-container *ngFor="let pos of data; index as i">
+    <div *ngIf="pos.date.getDay() === 1 || i === 0" class="week-header">{{getWeekHeader(pos.date)}}</div>
+    <div class="position" [class.expired]="pos.past">
+      <div class="position-header" [class.sunday]="pos.date.getDay() === 0"
+           [class.saturday]="pos.date.getDay() === 6">
+        <div class="day">{{pos.date | date:'EEEE'}}</div>
+        <div class="date">{{pos.date | date:'shortDate'}}</div>
+      </div>
+      <mat-button-toggle-group class="shift-toggles" [vertical]="viewMode === 'grid' || isMobile"
+                               [disabled]="pos.past"
+                               [value]="pos.shifts"
+                               (change)="handleAvailabilityChange($event, i)" multiple>
+        <mat-button-toggle value="first">Otwarcie</mat-button-toggle>
+        <mat-button-toggle value="middle">Międzyzmiana</mat-button-toggle>
+        <mat-button-toggle value="second">Zamknięcie</mat-button-toggle>
+      </mat-button-toggle-group>
     </div>
-    <mat-button-toggle-group class="shift-toggles" [vertical]="viewMode === 'grid'" [disabled]="pos.past" [value]="pos.shifts"
-                             (change)="handleAvailabilityChange($event, i)" multiple>
-      <mat-button-toggle value="first">Otwarcie</mat-button-toggle>
-      <mat-button-toggle value="middle">Międzyzmiana</mat-button-toggle>
-      <mat-button-toggle value="second">Zamknięcie</mat-button-toggle>
-    </mat-button-toggle-group>
-  </div>
+  </ng-container>
 </div>

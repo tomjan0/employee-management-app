@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, LOCALE_ID, OnDestroy, OnInit} from '@angular/core';
 import {DataService} from '../../../core/services/data.service';
 import {MatButtonToggleChange} from '@angular/material/button-toggle';
 import {take, takeUntil} from 'rxjs/operators';
@@ -8,6 +8,7 @@ import {AngularFirestoreDocument} from '@angular/fire/firestore';
 import {AvailabilitiesDataModel} from '../../../models/availabilities-data.model';
 import firebase from 'firebase/app';
 import {MediaMatcher} from '@angular/cdk/layout';
+import {formatDate} from '@angular/common';
 import Timestamp = firebase.firestore.Timestamp;
 
 type ViewMode = 'list' | 'grid';
@@ -42,7 +43,8 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
   constructor(private dataService: DataService,
               private snackService: SnackService,
               private media: MediaMatcher,
-              private changeDetectorRef: ChangeDetectorRef) {
+              private changeDetectorRef: ChangeDetectorRef,
+              @Inject(LOCALE_ID) private locale: string) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addEventListener('change', this.mobileQueryListener);
@@ -53,6 +55,7 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     this.viewMode = mode ? mode as ViewMode : 'list';
 
     this.date = new Date();
+    this.date.setHours(0, 0, 0, 0);
 
     if (this.dataService.dataReady.isStopped) {
       this.refreshData();
@@ -88,12 +91,31 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     return new Date(year, month + 1, 0).getDate();
   }
 
+  getClosestNotPastSunday(date: Date): Date {
+    const cp = new Date(date);
+    const diff = (7 - date.getDay()) % 7;
+    cp.setDate(cp.getDate() + diff);
+    if (cp.getMonth() !== date.getMonth()) {
+      cp.setDate(0);
+    }
+    return cp;
+  }
+
+  getWeekHeader(date: Date): string {
+    const sunday = this.getClosestNotPastSunday(date);
+    let res = formatDate(date, 'd MMM', this.locale);
+    if (sunday.getDate() !== date.getDate()) {
+      res += ' - ' + formatDate(sunday, 'd MMM', this.locale);
+    }
+    return res;
+  }
+
   refreshData(): void {
     const month = this.date.getMonth();
     const year = this.date.getFullYear();
     const dayCount = this.getDaysCount(year, month);
     const today = new Date();
-    today.setDate(today.getDate() - 1);
+    today.setHours(0, 0, 0, 0);
 
     this.data = Array.from(Array(dayCount).keys()).map(day => {
       const tmp = new Date(this.date);
@@ -111,7 +133,6 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
           const day = pos.timestamp.toDate().getDate();
           this.data[day - 1].shifts = pos.shifts;
         }
-        console.log(this.saveFires);
         if (this.saveFires === 0) {
           this.snackService.infoSnack('Nastąpiła zewnętrzna zmiana danych');
         }
