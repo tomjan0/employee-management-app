@@ -32,7 +32,7 @@ export class DataService {
       return this.firestore
         .collection('availabilities')
         .doc(this.organizationData.id)
-        .collection<AvailabilitiesDataModel>(`${month}-${year}`)
+        .collection(`${month}-${year}`)
         .doc<AvailabilitiesDataModel>(this.uid);
     } else {
       return undefined;
@@ -61,6 +61,10 @@ export class DataService {
 
   get username(): string | undefined {
     return this.userData?.username;
+  }
+
+  getOrganizationDocById(organizationId: string): AngularFirestoreDocument<OrganizationDataModel> {
+    return this.firestore.collection('organizations').doc(organizationId);
   }
 
 }

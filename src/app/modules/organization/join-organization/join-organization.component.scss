@@ -1,0 +1,18 @@
+@import "src/styles/variables";
+
+:host {
+  width: 100%;
+  @extend .container-inner;
+}
+
+.container-inner {
+  max-width: 20em;
+  display: flex;
+  align-self: center;
+  flex-direction: column;
+  border-radius: $radius;
+  padding: 2em;
+  border: 1px solid $gray-300;
+  box-shadow: $shadow-md;
+  background-color: $gray-100;
+}

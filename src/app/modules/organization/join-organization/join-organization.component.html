@@ -1,0 +1,3 @@
+<h1>Za chwilę dołączysz do organizacji {{organizationNameObs | async}}</h1>
+<button *ngIf="status === 'not-started'" mat-button (click)="confirmJoin()">Potwierdź</button>
+<mat-spinner *ngIf="status === 'in-progress'"></mat-spinner>
