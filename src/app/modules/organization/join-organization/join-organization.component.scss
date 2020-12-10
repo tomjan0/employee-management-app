@@ -16,3 +16,15 @@
   box-shadow: $shadow-md;
   background-color: $gray-100;
 }
+
+mat-spinner {
+  margin: auto;
+}
+
+h2 {
+  font-weight: 300;
+  span {
+    color: $blue-500;
+    font-weight: 500;
+  }
+}
