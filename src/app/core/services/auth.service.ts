@@ -7,6 +7,7 @@ import {SnackService} from './snack.service';
 import firebase from 'firebase/app';
 import {DataService} from './data.service';
 import UserDataModel from '../../models/user-data.model';
+import {OrganizationDataModel} from '../../models/organization-data.model';
 import User = firebase.User;
 
 @Injectable({
@@ -39,17 +40,20 @@ export class AuthService {
         await credentials.user?.updateProfile({displayName: registerForm.username});
       }
       const uid = credentials.user?.uid;
-      const organizationDocument = await this.firestore.collection('organizations').add({
-        name: registerForm.organizationName,
-        owner: uid,
-        members: [],
-      });
-      const userDocument = this.firestore.collection('users').doc<UserDataModel>(uid);
-      await userDocument.set({
-        username: registerForm.username ? registerForm.username : registerForm.email.split('@')[0],
-        organizations: [organizationDocument.id]
-      } );
-      credentials.user?.sendEmailVerification();
+      if (uid && registerForm.organizationName) {
+        const organizationDocument = await this.firestore.collection<OrganizationDataModel>('organizations').add({
+          name: registerForm.organizationName,
+          owner: uid,
+          members: [],
+          pendingMembers: []
+        });
+        const userDocument = this.firestore.collection('users').doc<UserDataModel>(uid);
+        await userDocument.set({
+          username: registerForm.username ? registerForm.username : registerForm.email.split('@')[0],
+          organizations: [organizationDocument.id]
+        });
+        credentials.user?.sendEmailVerification();
+      }
     } catch (authError) {
       throw authError;
     }

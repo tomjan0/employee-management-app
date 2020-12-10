@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {AuthService} from '../../../core/services/auth.service';
-import {ProcessingStatuses} from '../AuthEnums';
+import {ProcessingStatuses} from '../../../core/enums/AuthEnums';
 import {ActivatedRoute, Router} from '@angular/router';
 import {SnackService} from '../../../core/services/snack.service';
 import {take} from 'rxjs/operators';

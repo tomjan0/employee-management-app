@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
-import {FirebaseActions, ProcessingStatuses} from '../AuthEnums';
+import {FirebaseActions, ProcessingStatuses} from '../../../core/enums/AuthEnums';
 import {AuthService} from '../../../core/services/auth.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Subject} from 'rxjs';

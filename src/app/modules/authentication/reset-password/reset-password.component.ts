@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {ProcessingStatuses} from '../AuthEnums';
+import {ProcessingStatuses} from '../../../core/enums/AuthEnums';
 import {AuthService} from '../../../core/services/auth.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {SnackService} from '../../../core/services/snack.service';

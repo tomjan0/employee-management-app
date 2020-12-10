@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {AuthService} from '../../../core/services/auth.service';
 import RegisterFormModel from '../../../models/register-form.model';
-import {ProcessingStatuses} from '../AuthEnums';
+import {ProcessingStatuses} from '../../../core/enums/AuthEnums';
 import {Router} from '@angular/router';
 import {SnackService} from '../../../core/services/snack.service';
 
@@ -17,7 +17,7 @@ export class SignUpComponent implements OnInit {
   password = new FormControl('', [Validators.required, Validators.minLength(6)]);
   confirmPassword = new FormControl('');
   username = new FormControl('');
-  organizationName = new FormControl('', [Validators.required]);
+  organizationName = new FormControl('');
   signUpForm = new FormGroup({
     email: this.email,
     password: this.password,
