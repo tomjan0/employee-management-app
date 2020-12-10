@@ -6,7 +6,7 @@
       </button>
       <span class="example-spacer"></span>
       <div *ngIf="authService.userObs | async">
-        <span>{{authService.displayName}}@{{dataService.organizationName}}</span>
+        <span>{{dataService.username}}@{{dataService.organizationName}}</span>
         <button mat-icon-button [matMenuTriggerFor]="menu"
                 aria-label="Icon button to trigger user menu">
           <mat-icon>account_circle</mat-icon>

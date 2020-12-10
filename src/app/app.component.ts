@@ -48,7 +48,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   handleOpenChange(opened: boolean): void {
-    console.log(opened);
     this.dataService.setLocal('sidenav-opened', JSON.stringify(opened));
   }
 
@@ -61,8 +60,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
       this.ready = true;
     });
   }
-
-
 
 
 }

@@ -6,6 +6,7 @@ import {Router} from '@angular/router';
 import {SnackService} from './snack.service';
 import firebase from 'firebase/app';
 import {DataService} from './data.service';
+import UserDataModel from '../../models/user-data.model';
 import User = firebase.User;
 
 @Injectable({
@@ -30,9 +31,6 @@ export class AuthService {
     });
   }
 
-  get displayName(): string | null | undefined {
-    return this.user?.displayName;
-  }
 
   async createAccount(registerForm: RegisterFormModel): Promise<void> {
     try {
@@ -46,11 +44,11 @@ export class AuthService {
         owner: uid,
         members: [],
       });
-      const userDocument = this.firestore.collection('users').doc(uid);
+      const userDocument = this.firestore.collection('users').doc<UserDataModel>(uid);
       await userDocument.set({
-        // username: registerForm.username,
+        username: registerForm.username ? registerForm.username : registerForm.email.split('@')[0],
         organizations: [organizationDocument.id]
-      });
+      } );
       credentials.user?.sendEmailVerification();
     } catch (authError) {
       throw authError;

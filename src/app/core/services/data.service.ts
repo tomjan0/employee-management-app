@@ -10,6 +10,7 @@ import {AvailabilitiesDataModel} from '../../models/availabilities-data.model';
 })
 export class DataService {
   userDataObs: Observable<unknown> | undefined = undefined;
+  userData: UserDataModel | undefined = undefined;
   organizationData: OrganizationDataModel | undefined = undefined;
   organizationDataDoc: AngularFirestoreDocument<OrganizationDataModel> | undefined = undefined;
   uid = '';
@@ -44,6 +45,7 @@ export class DataService {
     this.userDataObs = this.firestore.collection('users').doc<UserDataModel>(uid).valueChanges();
     this.userDataObs.subscribe(userData => {
       const data = userData as UserDataModel;
+      this.userData = data;
       this.organizationDataDoc = this.firestore.collection('organizations').doc(data.organizations[0]);
       this.organizationDataDoc.valueChanges({idField: 'id'}).subscribe(orgData => {
         this.organizationData = orgData as OrganizationDataModel;
@@ -55,6 +57,10 @@ export class DataService {
 
   get organizationName(): string | undefined {
     return this.organizationData?.name;
+  }
+
+  get username(): string | undefined {
+    return this.userData?.username;
   }
 
 }
