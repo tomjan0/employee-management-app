@@ -32,4 +32,9 @@ export class ManageRequestsComponent implements OnInit, OnDestroy {
     return this.dataService.pendingUsersData.get(uid);
   }
 
+  getPendingUsername(uid: string): string {
+    const username = this.getPendingMemberData(uid)?.username;
+    return username ? username : 'Brak nazwy użytkownika';
+  }
+
 }
