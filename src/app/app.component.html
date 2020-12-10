@@ -13,14 +13,27 @@
         </button>
       </div>
       <mat-menu #menu="matMenu">
+        <button mat-menu-item [matMenuTriggerFor]="organizationMenu">
+          <mat-icon>business</mat-icon>
+          <span>Wybierz organizację</span>
+        </button>
         <button mat-menu-item (click)="logout()">
           <mat-icon>exit_to_app</mat-icon>
           <span>Wyloguj</span>
         </button>
       </mat-menu>
+      <mat-menu #organizationMenu="matMenu">
+        <ng-container *ngIf="organizations && organizations.length > 0; else noOrganizations">
+          <button *ngFor="let org of organizations" mat-menu-item>{{(org | async)?.name}}</button>
+        </ng-container>
+        <ng-template #noOrganizations>
+          <button mat-menu-item disabled>(brak)</button>
+        </ng-template>
+      </mat-menu>
     </mat-toolbar>
     <mat-sidenav-container class="side-nav-cont" [class.is-mobile]="mobileQuery.matches">
-      <mat-sidenav class="sidenav" [(opened)]="navOpen" (openedChange)="handleOpenChange($event)" #sidenav id="'sidenav'"
+      <mat-sidenav class="sidenav" [(opened)]="navOpen" (openedChange)="handleOpenChange($event)" #sidenav
+                   id="'sidenav'"
                    [mode]="mobileQuery.matches ? 'over' : 'side'"
                    [fixedInViewport]="mobileQuery.matches">
         <app-navigation></app-navigation>

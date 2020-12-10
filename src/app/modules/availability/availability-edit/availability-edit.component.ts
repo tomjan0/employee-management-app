@@ -178,11 +178,15 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
         return {shifts: pos.shifts, timestamp: Timestamp.fromDate(pos.date)};
       });
     try {
-      this.saveFires += 2;
-      await this.availabilitiesDoc?.set({positions: notEmpty} as AvailabilitiesDataModel);
-      this.snackService.successSnack('Zapisano!');
+      if (this.availabilitiesDoc) {
+        this.saveFires += 2;
+        await this.availabilitiesDoc?.set({positions: notEmpty} as AvailabilitiesDataModel);
+        this.snackService.successSnack('Zapisano!');
+      } else {
+        this.snackService.errorSnack('Utracono połączenie');
+      }
     } catch (e) {
-      console.error(e);
+      this.snackService.errorSnack('Wystąpił błąd podczas zapisywania');
     }
   }
 

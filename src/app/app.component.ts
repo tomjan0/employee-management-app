@@ -3,6 +3,8 @@ import {AuthService} from './core/services/auth.service';
 import {MediaMatcher} from '@angular/cdk/layout';
 import {DataService} from './core/services/data.service';
 import {take} from 'rxjs/operators';
+import {Observable} from 'rxjs';
+import {OrganizationDataModel} from './models/organization-data.model';
 
 @Component({
   selector: 'app-root',
@@ -59,6 +61,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this.authService.userObs.pipe(take(1)).subscribe(() => {
       this.ready = true;
     });
+  }
+
+  get organizations(): Observable<OrganizationDataModel | undefined>[] | undefined {
+    return this.dataService.userOrganizationsObs;
   }
 
 

@@ -40,17 +40,21 @@ export class AuthService {
         await credentials.user?.updateProfile({displayName: registerForm.username});
       }
       const uid = credentials.user?.uid;
-      if (uid && registerForm.organizationName) {
-        const organizationDocument = await this.firestore.collection<OrganizationDataModel>('organizations').add({
-          name: registerForm.organizationName,
-          owner: uid,
-          members: [],
-          pendingMembers: []
-        });
+      if (uid) {
+        const organizations = [];
+        if (registerForm.organizationName) {
+          const organizationDocument = await this.firestore.collection<OrganizationDataModel>('organizations').add({
+            name: registerForm.organizationName,
+            owner: uid,
+            members: [],
+            pendingMembers: []
+          });
+          organizations.push(organizationDocument.id);
+        }
         const userDocument = this.firestore.collection('users').doc<UserDataModel>(uid);
         await userDocument.set({
           username: registerForm.username ? registerForm.username : registerForm.email.split('@')[0],
-          organizations: [organizationDocument.id]
+          organizations
         });
         credentials.user?.sendEmailVerification();
       }
@@ -100,6 +104,8 @@ export class AuthService {
   }
 
   async signOut(): Promise<void> {
+    this.user = null;
+    this.dataService.signOut();
     await this.fireAuth.signOut();
     await this.router.navigate(['/']);
     this.snackService.successSnack('Wylogowano pomyślnie!');
