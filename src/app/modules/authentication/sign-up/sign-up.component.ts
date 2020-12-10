@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {AuthService} from '../../../core/services/auth.service';
-import RegisterFormModel from '../../../shared/models/register-form.model';
+import RegisterFormModel from '../../../models/register-form.model';
 import {ProcessingStatuses} from '../AuthEnums';
 import {Router} from '@angular/router';
 import {SnackService} from '../../../core/services/snack.service';

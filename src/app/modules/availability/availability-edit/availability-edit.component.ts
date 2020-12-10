@@ -5,7 +5,7 @@ import {take, takeUntil} from 'rxjs/operators';
 import {interval, Subject, Subscription} from 'rxjs';
 import {SnackService} from '../../../core/services/snack.service';
 import {AngularFirestoreDocument} from '@angular/fire/firestore';
-import {AvailabilitiesDataModel} from '../../../shared/models/availabilities-data.model';
+import {AvailabilitiesDataModel} from '../../../models/availabilities-data.model';
 import firebase from 'firebase/app';
 import {MediaMatcher} from '@angular/cdk/layout';
 import Timestamp = firebase.firestore.Timestamp;

@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
 import {AngularFirestore, AngularFirestoreDocument} from '@angular/fire/firestore';
-import UserDataModel from '../../shared/models/user-data.model';
-import {OrganizationDataModel} from '../../shared/models/organization-data.model';
+import UserDataModel from '../../models/user-data.model';
+import {OrganizationDataModel} from '../../models/organization-data.model';
 import {Observable, Subject} from 'rxjs';
-import {AvailabilitiesDataModel} from '../../shared/models/availabilities-data.model';
+import {AvailabilitiesDataModel} from '../../models/availabilities-data.model';
 
 @Injectable({
   providedIn: 'root'
