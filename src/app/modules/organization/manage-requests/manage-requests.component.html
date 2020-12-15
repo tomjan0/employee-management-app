@@ -1,3 +1,9 @@
 <mat-card *ngFor="let pendingUserId of pendingUsers">
-  {{getPendingUsername(pendingUserId)}}
+  <mat-card-content>
+    <p>Użytkownik <b>{{getPendingUsername(pendingUserId)}}</b> poprosił o dołączenie do <b>{{organizationName}}</b>.</p>
+  </mat-card-content>
+  <mat-card-actions>
+    <button (click)="accept(pendingUserId)" mat-raised-button color="primary">Akceptuj</button>
+    <button (click)="decline(pendingUserId)" mat-button color="warn">Odrzuć</button>
+  </mat-card-actions>
 </mat-card>

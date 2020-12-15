@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {DataService} from '../../../core/services/data.service';
 import {Subject} from 'rxjs';
 import UserDataModel from '../../../models/user-data.model';
+import {SnackService} from '../../../core/services/snack.service';
 
 @Component({
   selector: 'app-manage-requests',
@@ -12,7 +13,7 @@ export class ManageRequestsComponent implements OnInit, OnDestroy {
 
   ngUnsubscribe = new Subject<boolean>();
 
-  constructor(private dataService: DataService) {
+  constructor(private dataService: DataService, private snackService: SnackService) {
   }
 
   ngOnInit(): void {
@@ -35,6 +36,24 @@ export class ManageRequestsComponent implements OnInit, OnDestroy {
   getPendingUsername(uid: string): string {
     const username = this.getPendingMemberData(uid)?.username;
     return username ? username : 'Brak nazwy użytkownika';
+  }
+
+  get organizationName(): string | undefined {
+    return this.dataService.organizationName;
+  }
+
+  async accept(uid: string): Promise<void> {
+    try {
+      await this.dataService.acceptUser(uid);
+      this.snackService.successSnack('Prośba zaakcetowana pomyślnie!');
+    } catch (e) {
+      console.log(e);
+      this.snackService.errorSnack('Wystąpił błąd');
+    }
+  }
+
+  decline(uid: string): void {
+
   }
 
 }

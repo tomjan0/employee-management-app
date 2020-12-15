@@ -5,6 +5,7 @@ import {OrganizationDataModel} from '../../models/organization-data.model';
 import {Observable, Subject} from 'rxjs';
 import {AvailabilitiesDataModel} from '../../models/availabilities-data.model';
 import {takeUntil} from 'rxjs/operators';
+import firebase from 'firebase/app';
 
 @Injectable({
   providedIn: 'root'
@@ -92,6 +93,21 @@ export class DataService {
 
   get username(): string | undefined {
     return this.userData?.username;
+  }
+
+  async acceptUser(uid: string): Promise<void> {
+    try {
+      // @ts-ignore
+      await this.organizationDataDoc?.update({members: firebase.firestore.FieldValue.arrayUnion(uid)});
+      // @ts-ignore
+      await this.organizationDataDoc?.update({pendingMembers: firebase.firestore.FieldValue.arrayRemove(uid)});
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  declineUser(uid: string): void {
+
   }
 
 }

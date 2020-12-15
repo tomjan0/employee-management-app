@@ -1,0 +1,14 @@
+@import "src/styles/variables";
+
+.accept-btn {
+  background-color: $green-500;
+  color: white;
+}
+
+.decline-btn {
+  color: $red-500;
+}
+
+mat-card {
+  margin-bottom: 1em;
+}
