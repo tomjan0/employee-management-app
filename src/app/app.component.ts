@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {AuthService} from './core/services/auth.service';
 import {MediaMatcher} from '@angular/cdk/layout';
 import {DataService} from './core/services/data.service';
@@ -11,7 +11,7 @@ import {OrganizationDataModel} from './models/organization-data.model';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
+export class AppComponent implements OnInit, OnDestroy {
   mobileQuery: MediaQueryList;
   readonly title = 'employee-management-app';
   private readonly mobileQueryListener: () => any;
@@ -41,9 +41,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  ngAfterViewInit(): void {
-    console.log(this.sidenav);
-  }
 
   ngOnDestroy(): void {
     this.mobileQuery.removeEventListener('change', this.mobileQueryListener);
@@ -66,6 +63,4 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   get organizations(): Observable<OrganizationDataModel | undefined>[] | undefined {
     return this.dataService.userOrganizationsObs;
   }
-
-
 }

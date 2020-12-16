@@ -1,9 +1,16 @@
-<mat-card *ngFor="let pendingUserId of pendingUsers">
-  <mat-card-content>
-    <p>Użytkownik <b>{{getPendingUsername(pendingUserId)}}</b> poprosił o dołączenie do <b>{{organizationName}}</b>.</p>
-  </mat-card-content>
-  <mat-card-actions>
-    <button (click)="accept(pendingUserId)" mat-raised-button color="primary">Akceptuj</button>
-    <button (click)="decline(pendingUserId)" mat-button color="warn">Odrzuć</button>
-  </mat-card-actions>
-</mat-card>
+<div *ngFor="let request of membershipRequests | async; index as i" class="request-card">
+  <div class="request-info">
+    <div class="request-username">{{getUsernameObs(i) | async}}</div>
+    <div class="request-time">Otrzymano: {{request.requestTime.toDate() | date:'short'}}</div>
+  </div>
+  <div class="request-actions">
+    <button (click)="accept(request)" mat-button color="primary">Akceptuj</button>
+    <button (click)="decline(request)" mat-button color="warn">Odrzuć</button>
+  </div>
+</div>
+<div class="empty-prompt" *ngIf="!(membershipRequests | async)?.length">
+    <mat-icon>people</mat-icon>
+    <h2>
+      Brak próśb do rozpatrzenia
+    </h2>
+</div>

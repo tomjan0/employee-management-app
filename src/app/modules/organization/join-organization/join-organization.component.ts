@@ -6,7 +6,6 @@ import {SnackService} from '../../../core/services/snack.service';
 import {AngularFirestoreDocument} from '@angular/fire/firestore';
 import {OrganizationDataModel} from '../../../models/organization-data.model';
 import {DataService} from '../../../core/services/data.service';
-import firebase from 'firebase/app';
 
 @Component({
   selector: 'app-join-organization',
@@ -57,7 +56,7 @@ export class JoinOrganizationComponent implements OnInit, OnDestroy {
     this.status = 'in-progress';
     try {
       // @ts-ignore
-      await this.organizationDoc?.update({pendingMembers: firebase.firestore.FieldValue.arrayUnion(this.dataService.uid)});
+      await this.dataService.requestMembership(this.organizationId);
       this.snackService.successSnack('Pomyślnie poproszono o dołączenie do organizacji!');
       this.router.navigate(['/']);
     } catch (e) {
