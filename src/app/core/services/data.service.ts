@@ -1,24 +1,27 @@
 import {Injectable} from '@angular/core';
 import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument} from '@angular/fire/firestore';
 import UserDataModel from '../../models/user-data.model';
-import {OrganizationDataModel} from '../../models/organization-data.model';
+import {MemberDataModel, OrganizationDataModel} from '../../models/organization-data.model';
 import {Observable, Subject} from 'rxjs';
 import {AvailabilitiesDataModel} from '../../models/availabilities-data.model';
 import {takeUntil} from 'rxjs/operators';
 import firebase from 'firebase/app';
 import {OrganizationMembershipRequestModel} from '../../models/organization-membership-request.model';
+import AdditionalOrganizationDataModel from '../../models/additional-organization-data.model';
+import PublicUserDataModel from '../../models/public-user-data.model';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
-  userDataObs: Observable<UserDataModel | undefined> | undefined = undefined;
-  userData: UserDataModel | undefined = undefined;
-  userOrganizationsObs: Observable<OrganizationDataModel | undefined>[] | undefined = undefined;
-  organizationData: OrganizationDataModel | undefined = undefined;
-  organizationDataDoc: AngularFirestoreDocument<OrganizationDataModel> | undefined = undefined;
-  uid: string | undefined = undefined;
+  userDataObs: Observable<UserDataModel | undefined> | undefined;
+  userData: UserDataModel | undefined;
+  userOrganizationsObs: Observable<OrganizationDataModel | undefined>[] | undefined;
+  organizationData: OrganizationDataModel | undefined;
+  additionalOrganizationData: AdditionalOrganizationDataModel | undefined;
+  organizationDataDoc: AngularFirestoreDocument<OrganizationDataModel> | undefined;
+  uid: string | undefined;
   dataReady = new Subject<boolean>();
   ngUnsubscribe = new Subject<boolean>();
 
@@ -59,7 +62,7 @@ export class DataService {
     // subscribe to data changes
     this.userDataObs.subscribe(userData => {
       const data = userData as UserDataModel;
-      this.userOrganizationsObs = data.organizations.map(orgId => {
+      this.userOrganizationsObs = data?.organizations?.map(orgId => {
         return this.getOrganizationDocById(orgId).valueChanges().pipe(takeUntil(this.ngUnsubscribe));
       });
       // assign user data data
@@ -68,12 +71,34 @@ export class DataService {
         // subscribe to first organization data
         this.organizationDataDoc = this.firestore.collection('organizations').doc(data.organizations[0]);
         this.organizationDataDoc.valueChanges({idField: 'id'}).pipe(takeUntil(this.ngUnsubscribe)).subscribe(orgData => {
+          this.loadAdditionalOrganizationData(this.organizationData, orgData);
           this.organizationData = orgData as OrganizationDataModel;
           this.dataReady.next(true);
           this.dataReady.complete();
         });
       }
     });
+  }
+
+  async loadAdditionalOrganizationData(oldData: OrganizationDataModel | undefined, newData: OrganizationDataModel | undefined): Promise<void> {
+    if (newData) {
+      if (!this.additionalOrganizationData) {
+        this.additionalOrganizationData = {membersUsernames: Array(newData.members.length)};
+      }
+      for (let i = 0; i < newData.members.length; i++) {
+        const member = newData.members[i];
+        if (!oldData || member.userId !== oldData.members[i].userId) {
+          const memberPublicData = await this.getPublicUserDataOnce(member.userId);
+          this.additionalOrganizationData.membersUsernames[i] = (memberPublicData ? memberPublicData.username : 'Użytkownik');
+        }
+      }
+    } else {
+      this.additionalOrganizationData = undefined;
+    }
+  }
+
+  get currentUserMemberInfo(): MemberDataModel | undefined {
+    return this.organizationData?.members.find(member => member.userId === this.userData?.id);
   }
 
   getOrganizationDocById(organizationId: string): AngularFirestoreDocument<OrganizationDataModel> {
@@ -83,6 +108,17 @@ export class DataService {
   getUserDocById(userId: string): AngularFirestoreDocument<UserDataModel> {
     return this.firestore.collection('users').doc(userId);
   }
+
+  async getPublicUserDataOnce(uid: string): Promise<PublicUserDataModel | undefined> {
+    const doc = await this.firestore.collection('public-user-data').doc<PublicUserDataModel>(uid).get().toPromise();
+    return doc.data();
+  }
+
+  // getUsersPublicDataCollection(users: string[]) {
+  //   return this.firestore.collection<{username: string}>('public-user-data',
+  //     ref => ref
+  //       .where(firestore.FieldPath.documentId(), 'in', users));
+  // }
 
   // tslint:disable-next-line:max-line-length
   async getCurrentPendingOrganizationMembershipRequestsCollection(): Promise<AngularFirestoreCollection<OrganizationMembershipRequestModel>> {
@@ -111,6 +147,10 @@ export class DataService {
 
   get username(): string | undefined {
     return this.userData?.username;
+  }
+
+  get organizationInviteLink(): string {
+    return `http://localhost:4200/organization/join?orgId=${this.organizationData?.id}`;
   }
 
   async acceptMembershipRequest(request: OrganizationMembershipRequestModel): Promise<void> {

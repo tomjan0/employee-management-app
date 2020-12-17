@@ -45,8 +45,7 @@ export class AuthService {
         if (registerForm.organizationName) {
           const organizationDocument = await this.firestore.collection<OrganizationDataModel>('organizations').add({
             name: registerForm.organizationName,
-            owner: uid,
-            members: []
+            members: [{userId: uid, role: 'owner'}]
           });
           organizations.push(organizationDocument.id);
         }

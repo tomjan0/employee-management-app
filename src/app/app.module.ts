@@ -22,7 +22,7 @@ import {CoreModule} from './core/core.module';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAnalyticsModule,
     AngularFireAuthModule,
-    AngularFirestoreModule,
+    AngularFirestoreModule.enablePersistence(),
     AngularFireFunctionsModule,
     AppRoutingModule,
     BrowserAnimationsModule,

@@ -1,6 +1,10 @@
 export interface OrganizationDataModel {
-  members: string[];
+  members: MemberDataModel[];
   name: string;
-  owner: string;
   id?: string;
+}
+
+export interface MemberDataModel {
+  userId: string;
+  role: 'owner' | 'manager' | 'member';
 }

@@ -1,1 +1,20 @@
-<p>manage-members works!</p>
+<div *ngFor="let member of members; index as i" class="member-card">
+  <div class="member-info">
+    <div class="member-name">{{getMemberName(i)}}</div>
+    <div class="member-role" [ngClass]="member.role">{{getRoleName(member.role)}}</div>
+  </div>
+  <div class="member-actions">
+    <button *ngIf="canChangeRoles" mat-button color="primary">Zmień rolę</button>
+    <button mat-button color="warn">{{isCurrentUser(member.userId) ? 'Opuść' : 'Wyrzuć'}}</button>
+  </div>
+</div>
+<div class="share-card">
+  <div class="share-card-title">
+    Zaproś innych poprzez link
+  </div>
+  <div class="share-card-content">
+    <input #link matInput type="text" (click)="link.select()" readonly [value]="inviteLink">
+    <button mat-button color="accent" (click)="copied = true"
+            [cdkCopyToClipboard]="inviteLink">{{copied ? 'Skopiowano' : 'Skopiuj link'}}</button>
+  </div>
+</div>
