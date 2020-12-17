@@ -1,0 +1,11 @@
+<h2 mat-dialog-title>Wybierz rolę</h2>
+<mat-dialog-content>
+  <div class="options">
+    <button mat-button [ngClass]="[option.value, value === option.value ? 'active' : '']" (click)="value = option.value"
+            *ngFor="let option of options">{{option.name}}</button>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button [disabled]="!value" [mat-dialog-close]="value">Zatwierdź</button>
+</mat-dialog-actions>

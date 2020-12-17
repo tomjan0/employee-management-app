@@ -4,11 +4,12 @@ import UserDataModel from '../../models/user-data.model';
 import {MemberDataModel, OrganizationDataModel} from '../../models/organization-data.model';
 import {Observable, Subject} from 'rxjs';
 import {AvailabilitiesDataModel} from '../../models/availabilities-data.model';
-import {takeUntil} from 'rxjs/operators';
+import {map, takeUntil} from 'rxjs/operators';
 import firebase from 'firebase/app';
 import {OrganizationMembershipRequestModel} from '../../models/organization-membership-request.model';
 import AdditionalOrganizationDataModel from '../../models/additional-organization-data.model';
 import PublicUserDataModel from '../../models/public-user-data.model';
+import firestoreUtils = firebase.firestore;
 
 
 @Injectable({
@@ -87,7 +88,7 @@ export class DataService {
       }
       for (let i = 0; i < newData.members.length; i++) {
         const member = newData.members[i];
-        if (!oldData || member.userId !== oldData.members[i].userId) {
+        if (!oldData || !oldData.members[i] || member.userId !== oldData.members[i].userId) {
           const memberPublicData = await this.getPublicUserDataOnce(member.userId);
           this.additionalOrganizationData.membersUsernames[i] = (memberPublicData ? memberPublicData.username : 'Użytkownik');
         }
@@ -120,7 +121,6 @@ export class DataService {
   //       .where(firestore.FieldPath.documentId(), 'in', users));
   // }
 
-  // tslint:disable-next-line:max-line-length
   async getCurrentPendingOrganizationMembershipRequestsCollection(): Promise<AngularFirestoreCollection<OrganizationMembershipRequestModel>> {
     await this.dataReady.toPromise();
     return this.firestore.collection<OrganizationMembershipRequestModel>
@@ -191,6 +191,28 @@ export class DataService {
       }
     } else {
       throw new Error('userdata-not-fetched-yet');
+    }
+  }
+
+  async updateRole(member: MemberDataModel, role: string): Promise<void> {
+    try {
+      if (member.role !== role) {
+        // @ts-ignore
+        await this.organizationDataDoc?.update({members: firestoreUtils.FieldValue.arrayUnion({userId: member.userId, role})});
+        // @ts-ignore
+        await this.organizationDataDoc?.update({members: firestoreUtils.FieldValue.arrayRemove(member)});
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async removeMember(member: MemberDataModel): Promise<void> {
+    try {
+      // @ts-ignore
+      await this.organizationDataDoc?.update({members: firestoreUtils.FieldValue.arrayRemove(member)});
+    } catch (e) {
+      throw e;
     }
   }
 

@@ -4,8 +4,8 @@
     <div class="member-role" [ngClass]="member.role">{{getRoleName(member.role)}}</div>
   </div>
   <div class="member-actions">
-    <button *ngIf="canChangeRoles" mat-button color="primary">Zmień rolę</button>
-    <button mat-button color="warn">{{isCurrentUser(member.userId) ? 'Opuść' : 'Wyrzuć'}}</button>
+    <button *ngIf="canChangeRoleOf(member)" mat-button color="primary" (click)="changeRole(member)">Zmień rolę</button>
+    <button *ngIf="canRemove(member)" mat-button color="warn">{{isCurrentUser(member.userId) ? 'Opuść' : 'Wyrzuć'}}</button>
   </div>
 </div>
 <div class="share-card">
