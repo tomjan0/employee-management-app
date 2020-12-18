@@ -15,7 +15,7 @@ export class SnackService {
     this.openSnack(message, duration, SnackTypes.Success);
   }
 
-  errorSnack(message: string, duration?: number): void {
+  errorSnack(message: string = 'Wystąpił błąd', duration?: number): void {
     this.openSnack(message, duration, SnackTypes.Error);
   }
 

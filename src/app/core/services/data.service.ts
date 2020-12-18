@@ -4,12 +4,13 @@ import UserDataModel from '../../models/user-data.model';
 import {MemberDataModel, OrganizationDataModel} from '../../models/organization-data.model';
 import {Observable, Subject} from 'rxjs';
 import {AvailabilitiesDataModel} from '../../models/availabilities-data.model';
-import {map, takeUntil} from 'rxjs/operators';
+import {takeUntil} from 'rxjs/operators';
 import firebase from 'firebase/app';
 import {OrganizationMembershipRequestModel} from '../../models/organization-membership-request.model';
 import AdditionalOrganizationDataModel from '../../models/additional-organization-data.model';
 import PublicUserDataModel from '../../models/public-user-data.model';
 import firestoreUtils = firebase.firestore;
+import {Router} from '@angular/router';
 
 
 @Injectable({
@@ -23,10 +24,11 @@ export class DataService {
   additionalOrganizationData: AdditionalOrganizationDataModel | undefined;
   organizationDataDoc: AngularFirestoreDocument<OrganizationDataModel> | undefined;
   uid: string | undefined;
-  dataReady = new Subject<boolean>();
-  ngUnsubscribe = new Subject<boolean>();
+  organizationDataReady = new Subject<boolean>();
+  organizationUnsubscribe = new Subject<boolean>();
+  userUnsubscribe = new Subject<boolean>();
 
-  constructor(private firestore: AngularFirestore) {
+  constructor(private firestore: AngularFirestore, private router: Router) {
   }
 
   getFirestore(): AngularFirestore {
@@ -59,26 +61,41 @@ export class DataService {
     // get user document observer
     this.userDataObs = this.firestore.collection('users').doc<UserDataModel>(uid)
       .valueChanges({idField: 'id'})
-      .pipe(takeUntil(this.ngUnsubscribe));
+      .pipe(takeUntil(this.userUnsubscribe));
     // subscribe to data changes
     this.userDataObs.subscribe(userData => {
-      const data = userData as UserDataModel;
-      this.userOrganizationsObs = data?.organizations?.map(orgId => {
-        return this.getOrganizationDocById(orgId).valueChanges().pipe(takeUntil(this.ngUnsubscribe));
+      const newData = userData as UserDataModel;
+      this.userOrganizationsObs = newData?.organizations?.map(orgId => {
+        return this.getOrganizationDocById(orgId).valueChanges().pipe(takeUntil(this.userUnsubscribe));
       });
       // assign user data data
-      this.userData = data;
-      if (data.organizations.length > 0) {
-        // subscribe to first organization data
-        this.organizationDataDoc = this.firestore.collection('organizations').doc(data.organizations[0]);
-        this.organizationDataDoc.valueChanges({idField: 'id'}).pipe(takeUntil(this.ngUnsubscribe)).subscribe(orgData => {
-          this.loadAdditionalOrganizationData(this.organizationData, orgData);
-          this.organizationData = orgData as OrganizationDataModel;
-          this.dataReady.next(true);
-          this.dataReady.complete();
-        });
+      const oldData = this.userData;
+      this.userData = newData;
+      console.log(oldData, newData);
+      if (newData.organizations.length !== oldData?.organizations.length) {
+        if (this.organizationData?.id && !newData.organizations.includes(this.organizationData.id)) {
+          this.resetOrganizationData();
+        }
+        this.loadOrganizationData(0);
       }
     });
+  }
+
+  loadOrganizationData(organizationIndex: number): void {
+    if (this.userData && this.userData.organizations[organizationIndex]) {
+      // subscribe to first organization data
+      this.organizationDataDoc = this.firestore.collection('organizations').doc(this.userData.organizations[organizationIndex]);
+      this.organizationDataDoc.valueChanges({idField: 'id'}).pipe(takeUntil(this.organizationUnsubscribe)).subscribe(orgData => {
+        orgData?.members.sort((a) => a.userId === this.userData?.id ? -1 : 0);
+        this.loadAdditionalOrganizationData(this.organizationData, orgData);
+        this.organizationData = orgData as OrganizationDataModel;
+        this.organizationDataReady.next(true);
+        this.organizationDataReady.complete();
+      });
+    } else {
+      this.organizationDataReady.next(true);
+      this.organizationDataReady.complete();
+    }
   }
 
   async loadAdditionalOrganizationData(oldData: OrganizationDataModel | undefined, newData: OrganizationDataModel | undefined): Promise<void> {
@@ -122,7 +139,7 @@ export class DataService {
   // }
 
   async getCurrentPendingOrganizationMembershipRequestsCollection(): Promise<AngularFirestoreCollection<OrganizationMembershipRequestModel>> {
-    await this.dataReady.toPromise();
+    await this.organizationDataReady.toPromise();
     return this.firestore.collection<OrganizationMembershipRequestModel>
     ('membership-requests',
       ref => ref
@@ -131,14 +148,25 @@ export class DataService {
   }
 
   signOut(): void {
-    this.ngUnsubscribe.next(true);
+    this.userUnsubscribe.next(true);
     this.userDataObs = undefined;
     this.userData = undefined;
     this.userOrganizationsObs = undefined;
+    this.uid = undefined;
+    this.resetOrganizationData();
+  }
+
+  resetOrganizationData(): void {
+    this.organizationUnsubscribe.next(true);
     this.organizationData = undefined;
     this.organizationDataDoc = undefined;
-    this.uid = undefined;
-    this.dataReady = new Subject<boolean>();
+    this.organizationDataReady = new Subject<boolean>();
+    this.router.navigateByUrl('/');
+  }
+
+  changeOrganization(organizationIndex: number): void {
+    this.resetOrganizationData();
+    this.loadOrganizationData(organizationIndex);
   }
 
   get organizationName(): string | undefined {
@@ -211,6 +239,11 @@ export class DataService {
     try {
       // @ts-ignore
       await this.organizationDataDoc?.update({members: firestoreUtils.FieldValue.arrayRemove(member)});
+      // @ts-ignore
+      await this.getUserDocById(member.userId).update({organizations: firestoreUtils.FieldValue.arrayRemove(this.organizationData?.id)});
+      if (member.userId === this.uid) {
+        this.resetOrganizationData();
+      }
     } catch (e) {
       throw e;
     }

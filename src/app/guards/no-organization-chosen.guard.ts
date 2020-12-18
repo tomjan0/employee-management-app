@@ -18,7 +18,7 @@ export class NoOrganizationChosenGuard implements CanActivate {
   }
 
   async waitForData(): Promise<true | UrlTree> {
-    await this.dataService.dataReady.toPromise();
+    await this.dataService.organizationDataReady.toPromise();
     return this.dataService.organizationData !== undefined ? true : this.router.parseUrl('/no-organization-chosen');
   }
 

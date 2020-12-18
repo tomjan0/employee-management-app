@@ -2,10 +2,11 @@
   <div class="member-info">
     <div class="member-name">{{getMemberName(i)}}</div>
     <div class="member-role" [ngClass]="member.role">{{getRoleName(member.role)}}</div>
+    <div *ngIf="i === 0" class="member-role yourself">ty</div>
   </div>
   <div class="member-actions">
     <button *ngIf="canChangeRoleOf(member)" mat-button color="primary" (click)="changeRole(member)">Zmień rolę</button>
-    <button *ngIf="canRemove(member)" mat-button color="warn">{{isCurrentUser(member.userId) ? 'Opuść' : 'Wyrzuć'}}</button>
+    <button *ngIf="canRemove(member)" mat-button color="warn" (click)="removeMember(member)">{{isCurrentUser(member.userId) ? 'Opuść' : 'Wyrzuć'}}</button>
   </div>
 </div>
 <div class="share-card">

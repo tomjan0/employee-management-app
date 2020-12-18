@@ -5,7 +5,6 @@ import {NoOrganizationChosenComponent} from './core/views/no-organization-chosen
 import {NoOrganizationChosenGuard} from './guards/no-organization-chosen.guard';
 
 const redirectUnauthorizedToAuth = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-  console.log(state.url);
   return redirectUnauthorizedTo(`/auth?followUrl=${btoa(state.url)}`);
 };
 

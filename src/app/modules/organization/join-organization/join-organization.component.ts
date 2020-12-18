@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {map, takeUntil} from 'rxjs/operators';
+import {map, take, takeUntil} from 'rxjs/operators';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Observable, Subject} from 'rxjs';
+import {Subject} from 'rxjs';
 import {SnackService} from '../../../core/services/snack.service';
 import {AngularFirestoreDocument} from '@angular/fire/firestore';
 import {OrganizationDataModel} from '../../../models/organization-data.model';
@@ -14,9 +14,9 @@ import {DataService} from '../../../core/services/data.service';
 })
 export class JoinOrganizationComponent implements OnInit, OnDestroy {
   ngUnsubscribe = new Subject<boolean>();
-  organizationId: string | undefined = undefined;
+  organizationId = '';
   organizationDoc: AngularFirestoreDocument<OrganizationDataModel> | undefined = undefined;
-  organizationNameObs: Observable<string | undefined> | undefined = undefined;
+  organizationName = '';
   status: 'not-started' | 'in-progress' = 'not-started';
 
   constructor(private route: ActivatedRoute,
@@ -35,11 +35,27 @@ export class JoinOrganizationComponent implements OnInit, OnDestroy {
         if (!this.organizationId) {
           this.wrongLink();
         } else {
-          this.organizationDoc = this.dataService.getOrganizationDocById(this.organizationId);
-          this.organizationNameObs = this.organizationDoc.valueChanges().pipe(map(orgData => orgData?.name));
-          this.status = 'not-started';
+          this.prepareData();
         }
       });
+  }
+
+  async prepareData(): Promise<void> {
+    await this.dataService.organizationDataReady.toPromise();
+    if (this.dataService.userData?.organizations.includes(this.organizationId)) {
+      this.wrongLink('Należysz już do tej organizacji');
+    } else {
+      this.organizationDoc = this.dataService.getOrganizationDocById(this.organizationId);
+      const organizationData = await this.organizationDoc.snapshotChanges()
+        .pipe(take(1),
+          map(orgData => orgData.payload.exists ? orgData.payload.data() : undefined)).toPromise();
+      if (!organizationData) {
+        this.wrongLink();
+      } else {
+        this.organizationName = organizationData.name;
+        this.status = 'not-started';
+      }
+    }
   }
 
   ngOnDestroy(): void {

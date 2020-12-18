@@ -5,6 +5,7 @@ import {MemberDataModel} from '../../../models/organization-data.model';
 import {MatDialog} from '@angular/material/dialog';
 import {RoleChooseDialogComponent} from '../role-choose-dialog/role-choose-dialog.component';
 import {SnackService} from '../../../core/services/snack.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-manage-members',
@@ -17,7 +18,10 @@ export class ManageMembersComponent implements OnInit, OnDestroy {
   copied = false;
   roleNames = new Map<string, string>([['owner', 'właściciel'], ['manager', 'menedżer'], ['member', 'członek']]);
 
-  constructor(private dataService: DataService, private snackService: SnackService, private matDialog: MatDialog) {
+  constructor(private dataService: DataService,
+              private snackService: SnackService,
+              private matDialog: MatDialog,
+              private router: Router) {
   }
 
   ngOnInit(): void {
@@ -82,8 +86,12 @@ export class ManageMembersComponent implements OnInit, OnDestroy {
     });
     const res = await dialogRef.afterClosed().toPromise();
     if (res) {
-      await this.dataService.updateRole(member, res);
-      this.snackService.successSnack('Zmieniono rolę');
+      try {
+        await this.dataService.updateRole(member, res);
+        this.snackService.successSnack('Zmieniono rolę');
+      } catch (e) {
+        this.snackService.errorSnack();
+      }
     }
   }
 
@@ -101,11 +109,20 @@ export class ManageMembersComponent implements OnInit, OnDestroy {
     return this.isCurrentUserOwner || (this.isCurrentUserManager && member.role !== 'owner') || this.isCurrentUser(member.userId);
   }
 
-  async removeMember(member: MemberDataModel) {
+  async removeMember(member: MemberDataModel): Promise<void> {
     if (this.isCurrentUserOwner && this.isCurrentUser(member.userId) && this.countOwners() < 2) {
       this.snackService.errorSnack('Musisz najpierw wyznaczyć innego właściciela');
-    } else if ((this.isCurrentUserOwner || this.isCurrentUserManager) && member.role !== 'owner') {
+      return;
+    }
 
+    try {
+      await this.dataService.removeMember(member);
+      this.snackService.successSnack('Pomyślnie usunięto z organizacji');
+      if (this.isCurrentUser(member.userId)) {
+        this.router.navigateByUrl('/');
+      }
+    } catch (e) {
+      this.snackService.errorSnack();
     }
   }
 

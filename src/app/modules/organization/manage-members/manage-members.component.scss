@@ -94,6 +94,12 @@
         background-color: $green-200;
         color: $green-500;
       }
+
+      &.yourself {
+        margin-left: .5em;
+        background-color: $gray-200;
+        color: $gray-500;
+      }
     }
   }
 

@@ -57,10 +57,10 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     this.date = new Date();
     this.date.setHours(0, 0, 0, 0);
 
-    if (this.dataService.dataReady.isStopped) {
+    if (this.dataService.organizationDataReady.isStopped) {
       this.refreshData();
     } else {
-      this.dataService.dataReady.pipe(take(1)).subscribe(() => {
+      this.dataService.organizationDataReady.pipe(take(1)).subscribe(() => {
         this.refreshData();
       });
     }
