@@ -63,4 +63,5 @@ export class AppComponent implements OnInit, OnDestroy {
   get organizations(): Observable<OrganizationDataModel | undefined>[] | undefined {
     return this.dataService.userOrganizationsObs;
   }
+
 }

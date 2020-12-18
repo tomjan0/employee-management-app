@@ -9,8 +9,8 @@ import firebase from 'firebase/app';
 import {OrganizationMembershipRequestModel} from '../../models/organization-membership-request.model';
 import AdditionalOrganizationDataModel from '../../models/additional-organization-data.model';
 import PublicUserDataModel from '../../models/public-user-data.model';
-import firestoreUtils = firebase.firestore;
 import {Router} from '@angular/router';
+import firestoreUtils = firebase.firestore;
 
 
 @Injectable({
@@ -73,16 +73,21 @@ export class DataService {
       this.userData = newData;
       console.log(oldData, newData);
       if (newData.organizations.length !== oldData?.organizations.length) {
+
         if (this.organizationData?.id && !newData.organizations.includes(this.organizationData.id)) {
           this.resetOrganizationData();
+          // this.loadOrganizationData(0);
         }
-        this.loadOrganizationData(0);
+        if (!this.organizationData) {
+          this.loadOrganizationData(0);
+        }
       }
     });
   }
 
   loadOrganizationData(organizationIndex: number): void {
     if (this.userData && this.userData.organizations[organizationIndex]) {
+      console.log('reload');
       // subscribe to given organization data
       this.organizationDataDoc = this.firestore.collection('organizations').doc(this.userData.organizations[organizationIndex]);
       this.organizationDataDoc.valueChanges({idField: 'id'}).pipe(takeUntil(this.organizationUnsubscribe)).subscribe(orgData => {
@@ -237,6 +242,23 @@ export class DataService {
       await this.getUserDocById(member.userId).update({organizations: firestoreUtils.FieldValue.arrayRemove(this.organizationData?.id)});
       if (member.userId === this.uid) {
         this.resetOrganizationData();
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async createOrganization(name: string): Promise<void> {
+    try {
+      if (this.uid) {
+        const orgDocRef = await this.firestore.collection<OrganizationDataModel>('organizations').add({
+          members: [{
+            userId: this.uid,
+            role: 'owner'
+          }], name
+        });
+        // @ts-ignore
+        await this.firestore.collection('users').doc<UserDataModel>(this.uid).update({organizations: firestoreUtils.FieldValue.arrayUnion(orgDocRef.id)});
       }
     } catch (e) {
       throw e;

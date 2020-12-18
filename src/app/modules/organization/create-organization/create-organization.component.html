@@ -1,0 +1,13 @@
+<h1>Utwórz organizację</h1>
+<form [formGroup]="createOrganizationForm" (ngSubmit)="createOrganization()">
+  <mat-form-field appearance="standard">
+    <mat-label>Nazwa organizacji</mat-label>
+    <input matInput formControlName="organizationName">
+    <mat-error *ngIf="organizationName.invalid">{{getErrorMessage(organizationName)}}</mat-error>
+  </mat-form-field>
+  <button [attr.aria-label]="'Sign in'" type="submit"
+          [disabled]="!createOrganizationForm.valid || isInProgress"
+          mat-raised-button color="primary">Utwórz
+  </button>
+  <mat-spinner [diameter]="32" *ngIf="isInProgress"></mat-spinner>
+</form>

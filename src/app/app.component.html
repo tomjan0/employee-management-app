@@ -23,12 +23,12 @@
         </button>
       </mat-menu>
       <mat-menu #organizationMenu="matMenu">
-        <ng-container *ngIf="organizations && organizations.length > 0; else noOrganizations">
-          <button *ngFor="let org of organizations" mat-menu-item>{{(org | async)?.name}}</button>
-        </ng-container>
-        <ng-template #noOrganizations>
-          <button mat-menu-item disabled>(brak)</button>
-        </ng-template>
+        <button *ngFor="let org of organizations; index as i" mat-menu-item
+                (click)="dataService.changeOrganization(i)">{{(org | async)?.name}}</button>
+        <button mat-menu-item  routerLink="/organization/create">
+          <mat-icon>add</mat-icon>
+          <span>Utwórz nową</span>
+        </button>
       </mat-menu>
     </mat-toolbar>
     <mat-sidenav-container class="side-nav-cont" [class.is-mobile]="mobileQuery.matches">

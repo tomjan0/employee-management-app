@@ -8,16 +8,19 @@ import { ManageMembersComponent } from './manage-members/manage-members.componen
 import {ClipboardModule} from '@angular/cdk/clipboard';
 import { RoleChooseDialogComponent } from './role-choose-dialog/role-choose-dialog.component';
 import {MatDialogModule} from '@angular/material/dialog';
+import { CreateOrganizationComponent } from './create-organization/create-organization.component';
+import {ReactiveFormsModule} from '@angular/forms';
 
 
 @NgModule({
-  declarations: [JoinOrganizationComponent, ManageRequestsComponent, ManageMembersComponent, RoleChooseDialogComponent],
+  declarations: [JoinOrganizationComponent, ManageRequestsComponent, ManageMembersComponent, RoleChooseDialogComponent, CreateOrganizationComponent],
   imports: [
     CommonModule,
     OrganizationRoutingModule,
     MaterialModule,
     ClipboardModule,
-    MatDialogModule
+    MatDialogModule,
+    ReactiveFormsModule
   ]
 })
 export class OrganizationModule {
