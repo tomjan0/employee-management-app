@@ -83,7 +83,7 @@ export class DataService {
 
   loadOrganizationData(organizationIndex: number): void {
     if (this.userData && this.userData.organizations[organizationIndex]) {
-      // subscribe to first organization data
+      // subscribe to given organization data
       this.organizationDataDoc = this.firestore.collection('organizations').doc(this.userData.organizations[organizationIndex]);
       this.organizationDataDoc.valueChanges({idField: 'id'}).pipe(takeUntil(this.organizationUnsubscribe)).subscribe(orgData => {
         orgData?.members.sort((a) => a.userId === this.userData?.id ? -1 : 0);
@@ -131,12 +131,6 @@ export class DataService {
     const doc = await this.firestore.collection('public-user-data').doc<PublicUserDataModel>(uid).get().toPromise();
     return doc.data();
   }
-
-  // getUsersPublicDataCollection(users: string[]) {
-  //   return this.firestore.collection<{username: string}>('public-user-data',
-  //     ref => ref
-  //       .where(firestore.FieldPath.documentId(), 'in', users));
-  // }
 
   async getCurrentPendingOrganizationMembershipRequestsCollection(): Promise<AngularFirestoreCollection<OrganizationMembershipRequestModel>> {
     await this.organizationDataReady.toPromise();
