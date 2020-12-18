@@ -1,10 +1,13 @@
 import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
+import {ActivatedRouteSnapshot, RouterModule, RouterStateSnapshot, Routes} from '@angular/router';
 import {canActivate, redirectUnauthorizedTo} from '@angular/fire/auth-guard';
 import {NoOrganizationChosenComponent} from './core/views/no-organization-chosen/no-organization-chosen.component';
 import {NoOrganizationChosenGuard} from './guards/no-organization-chosen.guard';
 
-const redirectUnauthorizedToAuth = () => redirectUnauthorizedTo('/auth');
+const redirectUnauthorizedToAuth = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  console.log(state.url);
+  return redirectUnauthorizedTo(`/auth?followUrl=${btoa(state.url)}`);
+};
 
 const routes: Routes = [
   {

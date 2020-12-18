@@ -18,11 +18,21 @@ export class SignInComponent implements OnInit {
   hide = true;
   processingStatuses = ProcessingStatuses;
   status = this.processingStatuses.NotStarted;
+  redirect: string | undefined;
 
-  constructor(private authService: AuthService, private snackService: SnackService, private router: Router, private route: ActivatedRoute) {
+  constructor(private authService: AuthService,
+              private snackService: SnackService,
+              private router: Router,
+              private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
+    this.extractRedirectUrl();
+  }
+
+  async extractRedirectUrl(): Promise<void> {
+    const params = await this.route.queryParams.pipe(take(1)).toPromise();
+    this.redirect = params.followUrl ? atob(params.followUrl) : undefined;
   }
 
   getErrorMessage(field: FormControl): string {
@@ -59,7 +69,7 @@ export class SignInComponent implements OnInit {
         await this.authService.signIn(this.signInForm.value.email, this.signInForm.value.password);
         this.snackService.successSnack('Zalogowano pomyślnie!');
         this.status = this.processingStatuses.Succeeded;
-        await this.router.navigateByUrl('/');
+        await this.router.navigateByUrl(this.redirect ? this.redirect : '/');
       } catch (authError) {
         console.log(authError);
         switch (authError.code) {
