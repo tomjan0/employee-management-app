@@ -223,25 +223,30 @@ export class DataService {
 
   async updateRole(member: MemberDataModel, role: string): Promise<void> {
     try {
-      if (member.role !== role) {
-        // @ts-ignore
-        await this.organizationDataDoc?.update({members: firestoreUtils.FieldValue.arrayUnion({userId: member.userId, role})});
-        // @ts-ignore
-        await this.organizationDataDoc?.update({members: firestoreUtils.FieldValue.arrayRemove(member)});
+      if (member.role !== role && this.organizationDataDoc) {
+        const batch = this.firestore.firestore.batch();
+        batch.update(this.organizationDataDoc.ref, {members: firestoreUtils.FieldValue.arrayUnion({userId: member.userId, role})});
+        batch.update(this.organizationDataDoc.ref, {members: firestoreUtils.FieldValue.arrayRemove(member)});
+        await batch.commit();
       }
     } catch (e) {
+      console.log(e);
       throw e;
     }
   }
 
   async removeMember(member: MemberDataModel): Promise<void> {
     try {
-      // @ts-ignore
-      await this.organizationDataDoc?.update({members: firestoreUtils.FieldValue.arrayRemove(member)});
-      // @ts-ignore
-      await this.getUserDocById(member.userId).update({organizations: firestoreUtils.FieldValue.arrayRemove(this.organizationData?.id)});
-      if (member.userId === this.uid) {
-        this.resetOrganizationData();
+      if (this.organizationDataDoc) {
+        const batch = this.firestore.firestore.batch();
+        batch.update(this.organizationDataDoc.ref, {members: firestoreUtils.FieldValue.arrayRemove(member)});
+        batch.update(this.getUserDocById(member.userId).ref, {organizations: firestoreUtils.FieldValue.arrayRemove(this.organizationData?.id)});
+        await batch.commit();
+        if (member.userId === this.uid) {
+          this.resetOrganizationData();
+        }
+      } else {
+        throw new Error('no-organization-data');
       }
     } catch (e) {
       throw e;
@@ -251,14 +256,19 @@ export class DataService {
   async createOrganization(name: string): Promise<void> {
     try {
       if (this.uid) {
-        const orgDocRef = await this.firestore.collection<OrganizationDataModel>('organizations').add({
+        const orgData = {
           members: [{
             userId: this.uid,
             role: 'owner'
           }], name
-        });
-        // @ts-ignore
-        await this.firestore.collection('users').doc<UserDataModel>(this.uid).update({organizations: firestoreUtils.FieldValue.arrayUnion(orgDocRef.id)});
+        };
+        const orgDoc = await this.firestore.collection<OrganizationDataModel>('organizations').doc();
+        const userDoc = this.getUserDocById(this.uid);
+
+        const batch = this.firestore.firestore.batch();
+        batch.set(orgDoc.ref, orgData);
+        batch.update(userDoc.ref, {organizations: firestoreUtils.FieldValue.arrayUnion(orgDoc.ref.id)});
+        await batch.commit();
       }
     } catch (e) {
       throw e;
