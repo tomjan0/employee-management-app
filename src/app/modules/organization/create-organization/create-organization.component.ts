@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {DataService} from '../../../core/services/data.service';
-import {SimpleStatus} from '../../../core/types/custom.types.';
 import {SnackService} from '../../../core/services/snack.service';
 import {Router} from '@angular/router';
+import {SimpleStatus} from '../../../core/types/custom.types';
 
 @Component({
   selector: 'app-create-organization',
