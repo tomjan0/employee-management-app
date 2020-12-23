@@ -83,9 +83,10 @@
   .position {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    //align-items: center;
     margin: .5em;
-    background-color: white;
+    //background-color: white;
+    border: 2px solid $gray-300;
     border-radius: 6px;
     font-weight: 500;
     width: fit-content;
@@ -93,25 +94,28 @@
     box-shadow: $shadow-md;
 
     &.expired {
-      opacity: .5;
+      //opacity: .5;
     }
 
     .position-header {
       display: flex;
-      width: 100%;
+      //width: 100%;
       justify-content: space-between;
       align-items: center;
-      background-color: $green-500;
-      color: $gray-100;
-      border-radius: 6px;
+      border-bottom: 2px solid;
+      border-bottom-color: $green-500;
+      color: $green-500;
+
       padding: .5em;
 
       &.sunday {
-        background-color: $red-500;
+        color: $red-500;
+        border-bottom-color: $red-500;
       }
 
       &.saturday {
-        background-color: $yellow-500;
+        color: $yellow-500;
+        border-bottom-color: $yellow-500;
       }
 
       .day {
@@ -119,8 +123,86 @@
       }
     }
 
-    .shift-toggles {
-      margin-top: 1em;
+
+    .inner-card {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      border-radius: 6px;
+      background-color: $gray-100;
+      padding: 1em;
+
+      h4 {
+        border-bottom: 2px solid $gray-200;
+        font-weight: 500;
+      }
+    }
+
+    .config-shifts {
+
+      .config-shift {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+
+        &:not(:first-child) {
+          margin-top: 1em;
+        }
+
+        button {
+          margin-left: 1em;
+        }
+
+        .shift-info {
+          display: flex;
+          flex-grow: 1;
+          align-items: center;
+          justify-content: space-between;
+
+          .shift-time {
+            margin-left: 1em;
+            padding: .5em 1em;
+            border-radius: 999px;
+            color: $blue-500;
+            border: 2px solid $blue-500;
+          }
+        }
+      }
+
+      .custom-time-btn {
+        margin-top: 1em;
+        flex-grow: 1;
+      }
+    }
+
+    .user-availabilities {
+      .availability-periods {
+        display: flex;
+        flex-direction: column;
+
+        .availability-period {
+
+          display: flex;
+          flex-grow: 1;
+          align-items: center;
+
+          &:not(:first-child) {
+            margin-top: 1em;
+          }
+
+          .availability-time {
+            border: 2px solid $gray-500;
+            color: $gray-500;
+            border-radius: 6px;
+            padding: .5em 1em;
+            flex-grow: 1;
+            font-weight: 500;
+            text-align: center;
+          }
+
+        }
+      }
     }
   }
 }

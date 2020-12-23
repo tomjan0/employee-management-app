@@ -1,6 +1,3 @@
-import firebase from 'firebase';
-import Timestamp = firebase.firestore.Timestamp;
-
 export default interface ConfigModel {
   mon: ConfigShiftModel[];
   tue: ConfigShiftModel[];
@@ -12,8 +9,8 @@ export default interface ConfigModel {
 }
 
 export interface ConfigShiftModel {
-  start: Date | Timestamp;
-  end: Date | Timestamp;
+  start: Date;
+  end: Date;
   name?: string;
   minEmployees: number;
   maxEmployees: number;

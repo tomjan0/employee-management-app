@@ -28,14 +28,29 @@
         <div class="day">{{pos.date | date:'EEEE'}}</div>
         <div class="date">{{pos.date | date:'shortDate'}}</div>
       </div>
-      <mat-button-toggle-group class="shift-toggles" [vertical]="viewMode === 'grid' || isMobile"
-                               [disabled]="pos.past"
-                               [value]="pos.shifts"
-                               (change)="handleAvailabilityChange($event, i)" multiple>
-        <mat-button-toggle value="first">Otwarcie</mat-button-toggle>
-        <mat-button-toggle value="middle">Międzyzmiana</mat-button-toggle>
-        <mat-button-toggle value="second">Zamknięcie</mat-button-toggle>
-      </mat-button-toggle-group>
+      <div class="config-shifts inner-card">
+        <h4>Dostępne zmiany</h4>
+        <div class="config-shift" *ngFor="let shift of getConfigShifts(pos.date)">
+          <div class="shift-info">
+            <div>{{shift.name}}</div>
+            <div class="shift-time">{{shift.start | date:'shortTime'}} - {{shift.end | date:'shortTime'}}</div>
+          </div>
+          <button mat-button color="accent">Dodaj</button>
+        </div>
+        <button class="custom-time-btn" mat-stroked-button >Dodaj dowolny przedział</button>
+      </div>
+      <div class="user-availabilities inner-card">
+        <h4>Twoja dyspozycyjność</h4>
+        <div class="availability-periods">
+          <div *ngFor="let period of getAvailability(pos.date)" class="availability-period">
+            <div class="availability-time"> {{period.start | date:'shortTime'}}
+              - {{period.end | date:'shortTime'}}</div>
+            <button color="warn" mat-icon-button>
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </ng-container>
 </div>

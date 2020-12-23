@@ -50,7 +50,7 @@ export class DataService {
       console.log(this.organizationData);
       return this.firestore
         .collection('availabilities')
-        .doc(undefined)
+        .doc(this.organizationData.id)
         .collection(`${month}-${year}`)
         .doc<AvailabilitiesDataModel>(this.uid);
     } else {
@@ -102,6 +102,14 @@ export class DataService {
     } else {
       this.organizationDataReady.next(true);
       this.organizationDataReady.complete();
+    }
+  }
+
+  async waitForOrganizationData(): Promise<void> {
+    if (this.organizationDataReady.isStopped) {
+      return;
+    } else {
+      await this.organizationDataReady.toPromise();
     }
   }
 

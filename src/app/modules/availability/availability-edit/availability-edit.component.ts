@@ -9,6 +9,8 @@ import {AvailabilitiesDataModel} from '../../../models/availabilities-data.model
 import firebase from 'firebase/app';
 import {MediaMatcher} from '@angular/cdk/layout';
 import {formatDate} from '@angular/common';
+import ConfigModel, {ConfigShiftModel} from '../../../models/config.model';
+import {DayShort} from '../../../core/types/custom.types';
 import Timestamp = firebase.firestore.Timestamp;
 
 type ViewMode = 'list' | 'grid';
@@ -34,11 +36,26 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
   private readonly mobileQueryListener: () => void;
 
   private saveInterval = interval(1000);
-  private saveTimeout: Subscription | undefined = undefined;
+  private saveTimeout: Subscription | undefined;
 
-  private availabilitiesDoc: AngularFirestoreDocument | undefined = undefined;
+  private availabilitiesDoc: AngularFirestoreDocument | undefined;
   private currentSub: Subscription | undefined;
-  private saveFires = 0;
+
+  private config: ConfigModel = {
+    mon: [],
+    tue: [],
+    wed: [],
+    thu: [],
+    fri: [],
+    sat: [],
+    sun: [],
+  };
+  private daysShortArray: DayShort[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+  test = [{start: new Date(2020, 12, 1, 15, 0), end: new Date(2020, 12, 1, 22, 0)}, {
+    start: new Date(2020, 12, 1, 15, 0),
+    end: new Date(2020, 12, 1, 22, 0)
+  }, {start: new Date(2020, 12, 1, 15, 0), end: new Date(2020, 12, 1, 22, 0)}];
 
   constructor(private dataService: DataService,
               private snackService: SnackService,
@@ -51,24 +68,7 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const mode = this.dataService.getLocal('availability-view-mode');
-    this.viewMode = mode ? mode as ViewMode : 'list';
-
-    this.date = new Date();
-    this.date.setHours(0, 0, 0, 0);
-
-    if (this.dataService.organizationDataReady.isStopped) {
-      this.refreshData();
-    } else {
-      this.dataService.organizationDataReady.pipe(take(1)).subscribe(() => {
-        this.refreshData();
-      });
-    }
-
-  }
-
-  get isMobile(): boolean {
-    return this.mobileQuery.matches;
+    this.loadData();
   }
 
   ngOnDestroy(): void {
@@ -76,6 +76,40 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
     this.mobileQuery.removeEventListener('change', this.mobileQueryListener);
   }
+
+  get isMobile(): boolean {
+    return this.mobileQuery.matches;
+  }
+
+  async loadData(): Promise<void> {
+    await this.dataService.waitForOrganizationData();
+    this.dataService.defaultConfigDoc?.valueChanges().pipe(takeUntil(this.ngUnsubscribe)).subscribe(newConfig => {
+      if (newConfig) {
+        for (const day of this.daysShortArray) {
+          this.config[day] = newConfig[day]?.map(shift => {
+            shift.start = (shift.start as unknown as Timestamp).toDate();
+            shift.end = (shift.end as unknown as Timestamp).toDate();
+            return shift;
+          });
+        }
+        this.config = newConfig;
+      }
+    });
+
+    const mode = this.dataService.getLocal('availability-view-mode');
+    this.viewMode = mode ? mode as ViewMode : 'list';
+
+    this.date = new Date();
+    this.date.setHours(0, 0, 0, 0);
+
+    this.refreshData();
+  }
+
+  getConfigShifts(date: Date): ConfigShiftModel[] {
+    const day = (date.getDay() + 6) % 7;
+    return this.config ? this.config[this.daysShortArray[day]] : [];
+  }
+
 
   handleViewModeChange(e: MatButtonToggleChange): void {
     this.viewMode = e.value;
@@ -125,19 +159,12 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
 
     this.availabilitiesDoc = this.dataService.getAvailabilitiesDoc(month, year);
     this.currentSub?.unsubscribe();
-    this.saveFires++;
     this.currentSub = this.availabilitiesDoc?.valueChanges().pipe(takeUntil(this.ngUnsubscribe)).subscribe(data => {
       if (data) {
         const availabilities = data as AvailabilitiesDataModel;
         for (const pos of availabilities.positions) {
           const day = pos.timestamp.toDate().getDate();
           this.data[day - 1].shifts = pos.shifts;
-        }
-        if (this.saveFires === 0) {
-          this.snackService.infoSnack('Nastąpiła zewnętrzna zmiana danych');
-        }
-        if (this.saveFires > 0) {
-          this.saveFires--;
         }
       }
     });
@@ -179,15 +206,19 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
       });
     try {
       if (this.availabilitiesDoc) {
-        this.saveFires += 2;
         await this.availabilitiesDoc?.set({positions: notEmpty} as AvailabilitiesDataModel);
         this.snackService.successSnack('Zapisano!');
       } else {
         this.snackService.errorSnack('Utracono połączenie');
       }
     } catch (e) {
-      this.snackService.errorSnack('Wystąpił błąd podczas zapisywania');
+      this.snackService.errorSnack();
     }
+  }
+
+  getAvailability(day: Date): { start: Date; end: Date }[] {
+    console.log(day);
+    return this.test;
   }
 
 }

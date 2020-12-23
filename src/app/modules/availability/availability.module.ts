@@ -5,11 +5,12 @@ import { AvailabilityEditComponent } from './availability-edit/availability-edit
 import {MaterialModule} from '../../material.module';
 import {ReactiveFormsModule} from '@angular/forms';
 import {AvailabilityRoutingModule} from './availability-routing.module';
+import { AddCustomPeriodDialogComponent } from './add-custom-period-dialog/add-custom-period-dialog.component';
 
 
 
 @NgModule({
-  declarations: [AvailabilityViewComponent, AvailabilityEditComponent],
+  declarations: [AvailabilityViewComponent, AvailabilityEditComponent, AddCustomPeriodDialogComponent],
   imports: [
     CommonModule,
     AvailabilityRoutingModule,
