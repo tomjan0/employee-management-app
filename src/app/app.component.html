@@ -5,13 +5,13 @@
         <mat-icon>menu</mat-icon>
       </button>
       <span class="example-spacer"></span>
-      <div *ngIf="authService.userObs | async">
-        <span>{{dataService.username}} @ {{dataService.organizationName}}</span>
+      <ng-container *ngIf="authService.userObs | async">
+        <div style="flex-shrink: 1; text-overflow: ellipsis; overflow: hidden">{{dataService.username}} @ {{dataService.organizationName}}</div>
         <button mat-icon-button [matMenuTriggerFor]="menu"
                 aria-label="Icon button to trigger user menu">
           <mat-icon>account_circle</mat-icon>
         </button>
-      </div>
+      </ng-container>
       <mat-menu #menu="matMenu">
         <button mat-menu-item [matMenuTriggerFor]="organizationMenu">
           <mat-icon>business</mat-icon>

@@ -8,8 +8,9 @@ import {AddConfigShiftDialogComponent} from '../add-config-shift-dialog/add-conf
 import {DayShort} from '../../../core/types/custom.types';
 import {SnackService} from '../../../core/services/snack.service';
 import {takeUntil} from 'rxjs/operators';
-import Timestamp = firebase.firestore.Timestamp;
 import {ConfirmDialogComponent} from '../../../shared/dialogs/confirm-dialog/confirm-dialog.component';
+import {FormControl, Validators} from '@angular/forms';
+import Timestamp = firebase.firestore.Timestamp;
 
 
 @Component({
@@ -31,6 +32,7 @@ export class OrganizationSettingsComponent implements OnInit, OnDestroy {
   daysNamesArray: Date[] = [];
   displayedColumns = ['name', 'start', 'end', 'minEmployees', 'maxEmployees', 'delete'];
   copyInProgress = false;
+  nameControl = new FormControl('', [Validators.required]);
   ngUnsubscribe = new Subject<boolean>();
 
   constructor(private dataService: DataService,
@@ -58,6 +60,7 @@ export class OrganizationSettingsComponent implements OnInit, OnDestroy {
         this.config = newConfig;
       }
     });
+    this.nameControl.setValue(this.dataService.organizationData?.name);
   }
 
   ngOnDestroy(): void {
@@ -137,6 +140,19 @@ export class OrganizationSettingsComponent implements OnInit, OnDestroy {
         this.copyInProgress = false;
       }
     }
+  }
+
+  async changeOrganizationName(): Promise<void> {
+    if (this.nameControl.valid) {
+      try {
+        await this.dataService.changeOrganizationName(this.nameControl.value);
+        this.snackService.successSnack('Zmieniono nazwę');
+      }
+       catch (e) {
+        this.snackService.errorSnack();
+       }
+    }
+
   }
 
 }

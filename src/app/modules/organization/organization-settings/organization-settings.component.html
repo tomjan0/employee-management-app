@@ -50,12 +50,28 @@
         <mat-icon>copy</mat-icon>
         <span>Skopiuj do reszty dni</span>
       </button>
-      <button color="primary" class="add-shift-btn" (click)="overwriteShifts(day)" [disabled]="copyInProgress" mat-button>
+      <button color="primary" class="add-shift-btn" (click)="overwriteShifts(day)" [disabled]="copyInProgress"
+              mat-button>
         <mat-icon>swap_horiz</mat-icon>
         <span>Nadpisz do reszty dni</span>
       </button>
     </div>
 
+  </div>
+</section>
+<section>
+  <h2>Zmień nazwę</h2>
+  <div class="organization-name-change">
+    <mat-form-field appearance="standard">
+      <mat-label>Nowa nazwa</mat-label>
+      <input matInput placeholder="" [formControl]="nameControl" required>
+      <mat-error *ngIf="nameControl.invalid">Nazwa nie może być pusta</mat-error>
+    </mat-form-field>
+    <button color="primary" class="add-shift-btn" [disabled]="nameControl.invalid"
+            (click)="changeOrganizationName()"
+            mat-button>
+      <span>Zmień</span>
+    </button>
   </div>
 </section>
 

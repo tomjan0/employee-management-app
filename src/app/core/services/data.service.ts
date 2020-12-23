@@ -345,4 +345,14 @@ export class DataService {
     }
   }
 
+  async changeOrganizationName(newName: string): Promise<void> {
+    try {
+      if (this.organizationDataDoc && this.organizationData && this.organizationData.name !== newName) {
+        await this.organizationDataDoc.update({name: newName});
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
 }
