@@ -10,6 +10,8 @@ import {OrganizationMembershipRequestModel} from '../../models/organization-memb
 import AdditionalOrganizationDataModel from '../../models/additional-organization-data.model';
 import PublicUserDataModel from '../../models/public-user-data.model';
 import {Router} from '@angular/router';
+import ConfigModel, {ConfigShiftModel} from '../../models/config.model';
+import {DayShort} from '../types/custom.types';
 import firestoreUtils = firebase.firestore;
 
 
@@ -180,6 +182,10 @@ export class DataService {
     return `http://localhost:4200/organization/join?orgId=${this.organizationData?.id}`;
   }
 
+  get defaultConfigDoc(): AngularFirestoreDocument<ConfigModel> | undefined {
+    return this.organizationDataDoc?.collection('configs').doc('default');
+  }
+
   async acceptMembershipRequest(request: OrganizationMembershipRequestModel): Promise<void> {
     try {
       await this.firestore
@@ -245,8 +251,6 @@ export class DataService {
         if (member.userId === this.uid) {
           this.resetOrganizationData();
         }
-      } else {
-        throw new Error('no-organization-data');
       }
     } catch (e) {
       throw e;
@@ -275,5 +279,70 @@ export class DataService {
     }
   }
 
+  async addShift(day: DayShort, shift: ConfigShiftModel): Promise<void> {
+    try {
+      if (this.organizationDataDoc) {
+        const data = {};
+        // @ts-ignore
+        data[day] = firestoreUtils.FieldValue.arrayUnion(shift);
+        await this.organizationDataDoc.collection('configs').doc('default').update(data);
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async removeShift(day: DayShort, shift: ConfigShiftModel): Promise<void> {
+    try {
+      if (this.organizationDataDoc) {
+        const data = {};
+        // @ts-ignore
+        data[day] = firestoreUtils.FieldValue.arrayRemove(shift);
+        await this.organizationDataDoc.collection('configs').doc('default').update(data);
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async copyShifts(days: DayShort[], shiftsToCopy: ConfigShiftModel[]): Promise<void> {
+    try {
+      if (this.organizationDataDoc) {
+        const defaultConfigDoc = this.organizationDataDoc.collection('configs').doc('default');
+        const batch = this.firestore.firestore.batch();
+        for (const day of days) {
+          for (const shift of shiftsToCopy) {
+            const data = {};
+            // @ts-ignore
+            data[day] = firestoreUtils.FieldValue.arrayUnion(shift);
+
+            batch.update(defaultConfigDoc.ref, data);
+          }
+        }
+        await batch.commit();
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async overwriteShifts(days: DayShort[], shiftsToCopy: ConfigShiftModel[]): Promise<void> {
+    try {
+      if (this.organizationDataDoc) {
+        const defaultConfigDoc = this.organizationDataDoc.collection('configs').doc('default');
+        const batch = this.firestore.firestore.batch();
+        for (const day of days) {
+          const data = {};
+          // @ts-ignore
+          data[day] = shiftsToCopy;
+
+          batch.update(defaultConfigDoc.ref, data);
+        }
+        await batch.commit();
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
 
 }

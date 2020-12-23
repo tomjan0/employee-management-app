@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Dodaj zmianę</h2>
+<mat-dialog-content>
+  <form [formGroup]="shiftForm" (ngSubmit)="signIn()">
+    <mat-form-field appearance="standard">
+      <mat-label>Nazwa</mat-label>
+      <input matInput placeholder="" formControlName="name" required>
+      <mat-error *ngIf="getControl('name').invalid">{{getErrorMessage(getControl('name'))}}</mat-error>
+    </mat-form-field>
+    <div class="row">
+      <mat-form-field appearance="standard">
+        <mat-label>Początek</mat-label>
+        <input matInput type="time" formControlName="start" required>
+        <mat-error *ngIf="getControl('start').invalid">{{getErrorMessage(getControl('start'))}}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="standard">
+        <mat-label>Koniec</mat-label>
+        <input matInput type="time" formControlName="end" required>
+        <mat-error *ngIf="getControl('end').invalid">{{getErrorMessage(getControl('end'))}}</mat-error>
+      </mat-form-field>
+    </div>
+    <div>Liczba pracowników</div>
+    <div class="row">
+      <mat-form-field appearance="standard">
+        <mat-label>Min.</mat-label>
+        <input matInput type="number" formControlName="minEmployees" required min="0">
+        <mat-error
+          *ngIf="getControl('minEmployees').invalid">{{getErrorMessage(getControl('minEmployees'))}}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="standard">
+        <mat-label>Maks.</mat-label>
+        <input matInput type="number" formControlName="maxEmployees" required [min]="getControl('minEmployees').value">
+        <mat-error
+          *ngIf="getControl('maxEmployees').invalid">{{getErrorMessage(getControl('maxEmployees'))}}</mat-error>
+      </mat-form-field>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button color="warn" mat-button mat-dialog-close>Anuluj</button>
+
+  <button mat-raised-button color="primary" type="submit" [disabled]="shiftForm.invalid" [mat-dialog-close]="shiftForm.value">Zatwierdź</button>
+</mat-dialog-actions>
