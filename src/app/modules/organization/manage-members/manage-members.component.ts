@@ -6,6 +6,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {RoleChooseDialogComponent} from '../role-choose-dialog/role-choose-dialog.component';
 import {SnackService} from '../../../core/services/snack.service';
 import {Router} from '@angular/router';
+import {ConfirmDialogComponent} from '../../../shared/dialogs/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-manage-members',
@@ -114,15 +115,17 @@ export class ManageMembersComponent implements OnInit, OnDestroy {
       this.snackService.errorSnack('Musisz najpierw wyznaczyć innego właściciela');
       return;
     }
-
-    try {
-      await this.dataService.removeMember(member);
-      this.snackService.successSnack('Pomyślnie usunięto z organizacji');
-      if (this.isCurrentUser(member.userId)) {
-        this.router.navigateByUrl('/');
+    const confirm = await this.matDialog.open(ConfirmDialogComponent).afterClosed().toPromise();
+    if (confirm) {
+      try {
+        await this.dataService.removeMember(member);
+        this.snackService.successSnack('Pomyślnie usunięto z organizacji');
+        if (this.isCurrentUser(member.userId)) {
+          this.router.navigateByUrl('/');
+        }
+      } catch (e) {
+        this.snackService.errorSnack();
       }
-    } catch (e) {
-      this.snackService.errorSnack();
     }
   }
 
