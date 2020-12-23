@@ -52,8 +52,8 @@ export class OrganizationSettingsComponent implements OnInit, OnDestroy {
       if (newConfig) {
         for (const day of this.daysShortArray) {
           this.config[day] = newConfig[day]?.map(shift => {
-            shift.start = (shift.start as Timestamp).toDate();
-            shift.end = (shift.end as Timestamp).toDate();
+            shift.start = (shift.start as unknown as Timestamp).toDate();
+            shift.end = (shift.end as unknown as Timestamp).toDate();
             return shift;
           });
         }
