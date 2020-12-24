@@ -7,5 +7,10 @@ export interface AvailabilitiesDataModel {
 
 interface AvailabilitiesPositionDataModel {
   timestamp: Timestamp;
-  shifts: number[];
+  periods: AvailabilityPeriod[];
+}
+
+export interface AvailabilityPeriod {
+  start: string;
+  end: string;
 }

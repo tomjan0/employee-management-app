@@ -6,6 +6,7 @@ import {MaterialModule} from '../../material.module';
 import {ReactiveFormsModule} from '@angular/forms';
 import {AvailabilityRoutingModule} from './availability-routing.module';
 import { AddCustomPeriodDialogComponent } from './add-custom-period-dialog/add-custom-period-dialog.component';
+import {MatDialogModule} from '@angular/material/dialog';
 
 
 
@@ -15,6 +16,7 @@ import { AddCustomPeriodDialogComponent } from './add-custom-period-dialog/add-c
     CommonModule,
     AvailabilityRoutingModule,
     MaterialModule,
+    MatDialogModule,
     ReactiveFormsModule
   ]
 })

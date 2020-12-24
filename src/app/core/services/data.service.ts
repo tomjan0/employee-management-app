@@ -3,7 +3,7 @@ import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument} 
 import UserDataModel from '../../models/user-data.model';
 import {MemberDataModel, OrganizationDataModel} from '../../models/organization-data.model';
 import {Observable, Subject} from 'rxjs';
-import {AvailabilitiesDataModel} from '../../models/availabilities-data.model';
+import {AvailabilitiesDataModel, AvailabilityPeriod} from '../../models/availabilities-data.model';
 import {takeUntil} from 'rxjs/operators';
 import firebase from 'firebase/app';
 import {OrganizationMembershipRequestModel} from '../../models/organization-membership-request.model';
@@ -13,6 +13,7 @@ import {Router} from '@angular/router';
 import ConfigModel, {ConfigShiftModel} from '../../models/config.model';
 import {DayShort} from '../types/custom.types';
 import firestoreUtils = firebase.firestore;
+import Timestamp = firebase.firestore.Timestamp;
 
 
 @Injectable({
@@ -358,6 +359,87 @@ export class DataService {
       if (this.organizationDataDoc && this.organizationData && this.organizationData.name !== newName) {
         await this.organizationDataDoc.update({name: newName});
       }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async addAvailabilityPeriod(start: string, end: string, date: Date, availabilitiesDoc: AngularFirestoreDocument<AvailabilitiesDataModel>): Promise<void> {
+    try {
+      await this.firestore.firestore.runTransaction(async transaction => {
+        const doc = await transaction.get(availabilitiesDoc.ref);
+        if (doc.exists) {
+          const avb = doc.data() as AvailabilitiesDataModel;
+          const old = avb.positions.find(pos => {
+            const posDate = pos.timestamp.toDate();
+            return posDate.getUTCDate() === date.getUTCDate();
+          });
+          if (old) {
+            const newPeriods = [];
+            if (old.periods.length) {
+              // We need to merge, so will find index to insert new item and keep ascending order of starts
+              let id = old.periods.findIndex(p => start < p.start);
+              id = id > -1 ? id : old.periods.length;
+              old.periods.splice(id, 0, {start, end});
+              // Then merge
+              newPeriods.push(old.periods[0]);
+              for (const period of old.periods.slice(1)) {
+                const last = newPeriods[newPeriods.length - 1];
+                if (last.end < period.start) {
+                  newPeriods.push(period);
+                } else if (last.end < period.end) {
+                  last.end = period.end;
+                }
+              }
+            } else {
+              newPeriods.push({start, end});
+            }
+            old.periods = newPeriods;
+
+          } else {
+            avb.positions.push({
+              timestamp: Timestamp.fromDate(date),
+              periods: [{start, end}]
+            });
+          }
+
+          transaction.update(availabilitiesDoc.ref, {
+            positions: avb.positions
+          });
+        } else {
+          transaction.set(availabilitiesDoc.ref, {
+            positions: [{
+              timestamp: Timestamp.fromDate(date),
+              periods: [{start, end}]
+            }]
+          });
+        }
+      });
+      console.log('end');
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async removeAvailabilityPeriod(period: AvailabilityPeriod, date: Date, availabilitiesDoc: AngularFirestoreDocument<AvailabilitiesDataModel>): Promise<void> {
+    try {
+      await this.firestore.firestore.runTransaction(async transaction => {
+        const doc = await transaction.get(availabilitiesDoc.ref);
+        if (doc.exists) {
+          const avb = doc.data() as AvailabilitiesDataModel;
+          const position = avb.positions.find(pos => {
+            const posDate = pos.timestamp.toDate();
+            return posDate.getUTCDate() === date.getUTCDate();
+          });
+          if (position) {
+            console.log(period);
+            console.log(position.periods);
+            position.periods = position.periods.filter(p => p.start !== period.start || p.end !== period.end);
+            console.log(position.periods);
+            transaction.update(availabilitiesDoc.ref, {positions: avb.positions});
+          }
+        }
+      });
     } catch (e) {
       throw e;
     }

@@ -166,13 +166,14 @@
             border-radius: 999px;
             color: $blue-500;
             border: 2px solid $blue-500;
+            //border: 2px solid $gray-500;
+            //color: $gray-500;
           }
         }
       }
 
       .custom-time-btn {
         margin-top: 1em;
-        flex-grow: 1;
       }
     }
 
@@ -192,8 +193,12 @@
           }
 
           .availability-time {
-            border: 2px solid $gray-500;
-            color: $gray-500;
+            //border: 2px solid $gray-500;
+            //color: $gray-500;
+            //color: $blue-500;
+            //border: 2px solid $blue-500;
+            background-color: $blue-500;
+            color: white;
             border-radius: 6px;
             padding: .5em 1em;
             flex-grow: 1;

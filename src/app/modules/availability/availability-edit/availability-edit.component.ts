@@ -1,23 +1,25 @@
 import {ChangeDetectorRef, Component, Inject, LOCALE_ID, OnDestroy, OnInit} from '@angular/core';
 import {DataService} from '../../../core/services/data.service';
 import {MatButtonToggleChange} from '@angular/material/button-toggle';
-import {take, takeUntil} from 'rxjs/operators';
-import {interval, Subject, Subscription} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {Subject, Subscription} from 'rxjs';
 import {SnackService} from '../../../core/services/snack.service';
 import {AngularFirestoreDocument} from '@angular/fire/firestore';
-import {AvailabilitiesDataModel} from '../../../models/availabilities-data.model';
+import {AvailabilitiesDataModel, AvailabilityPeriod} from '../../../models/availabilities-data.model';
 import firebase from 'firebase/app';
 import {MediaMatcher} from '@angular/cdk/layout';
 import {formatDate} from '@angular/common';
 import ConfigModel, {ConfigShiftModel} from '../../../models/config.model';
-import {DayShort} from '../../../core/types/custom.types';
+import {DayShort, SimpleStatus} from '../../../core/types/custom.types';
+import {MatDialog} from '@angular/material/dialog';
+import {AddCustomPeriodDialogComponent} from '../add-custom-period-dialog/add-custom-period-dialog.component';
 import Timestamp = firebase.firestore.Timestamp;
 
 type ViewMode = 'list' | 'grid';
 
 interface Position {
   date: Date;
-  shifts: number[];
+  periods: AvailabilityPeriod[];
   past: boolean;
 }
 
@@ -35,10 +37,7 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
   private readonly mobileQuery;
   private readonly mobileQueryListener: () => void;
 
-  private saveInterval = interval(1000);
-  private saveTimeout: Subscription | undefined;
-
-  private availabilitiesDoc: AngularFirestoreDocument | undefined;
+  private availabilitiesDoc: AngularFirestoreDocument<AvailabilitiesDataModel> | undefined;
   private currentSub: Subscription | undefined;
 
   private config: ConfigModel = {
@@ -52,15 +51,13 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
   };
   private daysShortArray: DayShort[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
-  test = [{start: new Date(2020, 12, 1, 15, 0), end: new Date(2020, 12, 1, 22, 0)}, {
-    start: new Date(2020, 12, 1, 15, 0),
-    end: new Date(2020, 12, 1, 22, 0)
-  }, {start: new Date(2020, 12, 1, 15, 0), end: new Date(2020, 12, 1, 22, 0)}];
+  status: SimpleStatus = 'not-started';
 
   constructor(private dataService: DataService,
               private snackService: SnackService,
               private media: MediaMatcher,
               private changeDetectorRef: ChangeDetectorRef,
+              private matDialog: MatDialog,
               @Inject(LOCALE_ID) private locale: string) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => changeDetectorRef.detectChanges();
@@ -116,11 +113,6 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     this.dataService.setLocal('availability-view-mode', this.viewMode);
   }
 
-  handleAvailabilityChange(e: MatButtonToggleChange, id: number): void {
-    this.data[id].shifts = e.value as number[];
-    this.debounceSave();
-  }
-
   getDaysCount(year: number, month: number): number {
     return new Date(year, month + 1, 0).getDate();
   }
@@ -154,7 +146,7 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     this.data = Array.from(Array(dayCount).keys()).map(day => {
       const tmp = new Date(this.date);
       tmp.setDate(day + 1);
-      return {date: tmp, shifts: [], past: tmp < today};
+      return {date: tmp, periods: [], past: tmp < today};
     });
 
     this.availabilitiesDoc = this.dataService.getAvailabilitiesDoc(month, year);
@@ -164,18 +156,13 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
         const availabilities = data as AvailabilitiesDataModel;
         for (const pos of availabilities.positions) {
           const day = pos.timestamp.toDate().getDate();
-          this.data[day - 1].shifts = pos.shifts;
+          this.data[day - 1].periods = pos.periods;
         }
       }
     });
   }
 
-  async changeMonth(diff: 1 | -1): Promise<void> {
-    if (this.saveTimeout) {
-      this.saveTimeout.unsubscribe();
-      this.saveTimeout = undefined;
-      await this.save();
-    }
+  changeMonth(diff: 1 | -1): void {
     const date = new Date(this.date);
     date.setMonth(date.getMonth() + diff);
     this.date = date;
@@ -190,35 +177,56 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     this.changeMonth(-1);
   }
 
-  debounceSave(): void {
-    this.saveTimeout?.unsubscribe();
-    this.saveTimeout = this.saveInterval.pipe(take(1)).subscribe(() => {
-      this.saveTimeout = undefined;
-      this.save();
-    });
+  isIncluded(startDate: Date, endDate: Date, periods: AvailabilityPeriod[]): boolean {
+    const start = startDate.toTimeString().slice(0, 5);
+    const end = endDate.toTimeString().slice(0, 5);
+    for (const period of periods) {
+      if (start >= period.start && end <= period.end) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  async save(): Promise<void> {
-    const notEmpty = this.data
-      .filter(pos => pos.shifts.length > 0)
-      .map(pos => {
-        return {shifts: pos.shifts, timestamp: Timestamp.fromDate(pos.date)};
-      });
-    try {
-      if (this.availabilitiesDoc) {
-        await this.availabilitiesDoc?.set({positions: notEmpty} as AvailabilitiesDataModel);
-        this.snackService.successSnack('Zapisano!');
-      } else {
-        this.snackService.errorSnack('Utracono połączenie');
-      }
-    } catch (e) {
-      this.snackService.errorSnack();
+  async addCustomPeriod(date: Date): Promise<void> {
+    const res = await this.matDialog.open(AddCustomPeriodDialogComponent).afterClosed().toPromise();
+    if (res) {
+      await this.addPeriod(res.start, res.end, date);
     }
   }
 
-  getAvailability(day: Date): { start: Date; end: Date }[] {
-    console.log(day);
-    return this.test;
+  addPeriodFromConfig(startDate: Date, endDate: Date, date: Date): void {
+    const start = startDate.toTimeString().slice(0, 5);
+    const end = endDate.toTimeString().slice(0, 5);
+    this.addPeriod(start, end, date);
+  }
+
+  async addPeriod(start: string, end: string, date: Date): Promise<void> {
+    if (this.availabilitiesDoc) {
+      try {
+        this.status = 'in-progress';
+        await this.dataService.addAvailabilityPeriod(start, end, date, this.availabilitiesDoc);
+        this.snackService.successSnack('Zaktualizowano dyspozycyjność');
+      } catch (e) {
+        this.snackService.errorSnack();
+      } finally {
+        this.status = 'not-started';
+      }
+    }
+  }
+
+  async removePeriod(period: AvailabilityPeriod, date: Date): Promise<void> {
+    if (this.availabilitiesDoc) {
+      try {
+        this.status = 'in-progress';
+        await this.dataService.removeAvailabilityPeriod(period, date, this.availabilitiesDoc);
+        this.snackService.successSnack('Zaktualizowano dyspozycyjność');
+      } catch (e) {
+        this.snackService.errorSnack();
+      } finally {
+        this.status = 'not-started';
+      }
+    }
   }
 
 }
