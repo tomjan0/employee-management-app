@@ -35,11 +35,11 @@
             <div>{{shift.name}}</div>
             <div class="shift-time">{{shift.start | date:'shortTime'}} - {{shift.end | date:'shortTime'}}</div>
           </div>
-          <button mat-button color="accent" [disabled]="status === 'in-progress' || isIncluded(shift.start, shift.end, pos.periods)"
+          <button mat-button color="accent" [disabled]="pos.past || status === 'in-progress' || isIncluded(shift.start, shift.end, pos.periods)"
                   (click)="addPeriodFromConfig(shift.start, shift.end, pos.date)">Dodaj
           </button>
         </div>
-        <button class="custom-time-btn" mat-stroked-button [disabled]="status === 'in-progress'"
+        <button class="custom-time-btn" mat-stroked-button [disabled]="pos.past || status === 'in-progress'"
                 (click)="addCustomPeriod(pos.date)">Dodaj dowolny przedział
         </button>
       </div>
@@ -49,7 +49,7 @@
           <div *ngFor="let period of pos.periods" class="availability-period">
             <div class="availability-time"> {{period.start}}
               - {{period.end}}</div>
-            <button color="warn" mat-icon-button [disabled]="status === 'in-progress'"
+            <button color="warn" mat-icon-button [disabled]="pos.past || status === 'in-progress'"
             (click)="removePeriod(period,pos.date)">
               <mat-icon>delete</mat-icon>
             </button>
