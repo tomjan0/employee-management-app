@@ -3,6 +3,7 @@ import Timestamp = firebase.firestore.Timestamp;
 
 export interface AvailabilitiesDataModel {
   positions: AvailabilitiesPositionDataModel[];
+  preferredPositions: AvailabilitiesPositionDataModel[];
 }
 
 interface AvailabilitiesPositionDataModel {

@@ -20,6 +20,7 @@ type ViewMode = 'list' | 'grid';
 interface Position {
   date: Date;
   periods: AvailabilityPeriod[];
+  preferredPeriods: AvailabilityPeriod[];
   past: boolean;
 }
 
@@ -146,7 +147,7 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     this.data = Array.from(Array(dayCount).keys()).map(day => {
       const tmp = new Date(this.date);
       tmp.setDate(day + 1);
-      return {date: tmp, periods: [], past: tmp < today};
+      return {date: tmp, periods: [], preferredPeriods: [], past: tmp < today};
     });
 
     this.availabilitiesDoc = this.dataService.getAvailabilitiesDoc(month, year);
@@ -157,6 +158,11 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
         for (const pos of availabilities.positions) {
           const day = pos.timestamp.toDate().getDate();
           this.data[day - 1].periods = pos.periods;
+        }
+
+        for (const pos of availabilities.preferredPositions) {
+          const day = pos.timestamp.toDate().getDate();
+          this.data[day - 1].preferredPeriods = pos.periods;
         }
       }
     });
@@ -189,23 +195,26 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
   }
 
   async addCustomPeriod(date: Date): Promise<void> {
-    const res = await this.matDialog.open(AddCustomPeriodDialogComponent).afterClosed().toPromise();
+    const res: { start: string, end: string, preferred: boolean } = await this.matDialog.open(AddCustomPeriodDialogComponent).afterClosed().toPromise();
     if (res) {
       await this.addPeriod(res.start, res.end, date);
+      if (res.preferred) {
+        await this.addPeriod(res.start, res.end, date, true);
+      }
     }
   }
 
-  addPeriodFromConfig(startDate: Date, endDate: Date, date: Date): void {
+  addPeriodFromConfig(startDate: Date, endDate: Date, date: Date, prefer = false): void {
     const start = startDate.toTimeString().slice(0, 5);
     const end = endDate.toTimeString().slice(0, 5);
-    this.addPeriod(start, end, date);
+    this.addPeriod(start, end, date, prefer);
   }
 
-  async addPeriod(start: string, end: string, date: Date): Promise<void> {
+  async addPeriod(start: string, end: string, date: Date, prefer = false): Promise<void> {
     if (this.availabilitiesDoc) {
       try {
         this.status = 'in-progress';
-        await this.dataService.addAvailabilityPeriod(start, end, date, this.availabilitiesDoc);
+        await this.dataService.addAvailabilityPeriod(start, end, date, this.availabilitiesDoc, prefer);
         this.snackService.successSnack('Zaktualizowano dyspozycyjność');
       } catch (e) {
         this.snackService.errorSnack();
@@ -215,11 +224,11 @@ export class AvailabilityEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  async removePeriod(period: AvailabilityPeriod, date: Date): Promise<void> {
+  async removePeriod(period: AvailabilityPeriod, date: Date, prefer = false): Promise<void> {
     if (this.availabilitiesDoc) {
       try {
         this.status = 'in-progress';
-        await this.dataService.removeAvailabilityPeriod(period, date, this.availabilitiesDoc);
+        await this.dataService.removeAvailabilityPeriod(period, date, this.availabilitiesDoc, prefer);
         this.snackService.successSnack('Zaktualizowano dyspozycyjność');
       } catch (e) {
         this.snackService.errorSnack();

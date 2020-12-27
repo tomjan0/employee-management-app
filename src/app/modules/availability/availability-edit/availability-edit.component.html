@@ -33,11 +33,24 @@
         <div class="config-shift" *ngFor="let shift of getConfigShifts(pos.date)">
           <div class="shift-info">
             <div>{{shift.name}}</div>
-            <div class="shift-time">{{shift.start | date:'shortTime'}} - {{shift.end | date:'shortTime'}}</div>
+            <div class="shift-time"
+                 [class.included]="isIncluded(shift.start, shift.end, pos.periods)"
+                 [class.preferred]="isIncluded(shift.start,shift.end, pos.preferredPeriods)">{{shift.start | date:'shortTime'}}
+              - {{shift.end | date:'shortTime'}}</div>
           </div>
-          <button mat-button color="accent" [disabled]="pos.past || status === 'in-progress' || isIncluded(shift.start, shift.end, pos.periods)"
-                  (click)="addPeriodFromConfig(shift.start, shift.end, pos.date)">Dodaj
+          <button (click)="addPeriodFromConfig(shift.start, shift.end, pos.date)"
+                  *ngIf="!isIncluded(shift.start,shift.end,pos.periods); else prefer"
+                  [disabled]="pos.past || status === 'in-progress' || isIncluded(shift.start, shift.end, pos.periods)"
+                  class="add-period-btn"
+                  mat-button color="accent">Dodaj
           </button>
+          <ng-template #prefer>
+            <button (click)="addPeriodFromConfig(shift.start, shift.end, pos.date, true)"
+                    [disabled]="pos.past || status === 'in-progress' || isIncluded(shift.start, shift.end, pos.preferredPeriods)"
+                    class="add-period-btn"
+                    mat-button color="accent">Preferuj
+            </button>
+          </ng-template>
         </div>
         <button class="custom-time-btn" mat-stroked-button [disabled]="pos.past || status === 'in-progress'"
                 (click)="addCustomPeriod(pos.date)">Dodaj dowolny przedział
@@ -50,7 +63,20 @@
             <div class="availability-time"> {{period.start}}
               - {{period.end}}</div>
             <button color="warn" mat-icon-button [disabled]="pos.past || status === 'in-progress'"
-            (click)="removePeriod(period,pos.date)">
+                    (click)="removePeriod(period,pos.date)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="user-availabilities inner-card">
+        <h4>Twoje preferencje</h4>
+        <div class="availability-periods">
+          <div *ngFor="let period of pos.preferredPeriods" class="availability-period">
+            <div class="availability-time preferred"> {{period.start}}
+              - {{period.end}}</div>
+            <button color="warn" mat-icon-button [disabled]="pos.past || status === 'in-progress'"
+                    (click)="removePeriod(period,pos.date)">
               <mat-icon>delete</mat-icon>
             </button>
           </div>

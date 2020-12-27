@@ -7,6 +7,7 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {AvailabilityRoutingModule} from './availability-routing.module';
 import { AddCustomPeriodDialogComponent } from './add-custom-period-dialog/add-custom-period-dialog.component';
 import {MatDialogModule} from '@angular/material/dialog';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 
 
 
@@ -17,7 +18,8 @@ import {MatDialogModule} from '@angular/material/dialog';
     AvailabilityRoutingModule,
     MaterialModule,
     MatDialogModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatCheckboxModule
   ]
 })
 export class AvailabilityModule { }

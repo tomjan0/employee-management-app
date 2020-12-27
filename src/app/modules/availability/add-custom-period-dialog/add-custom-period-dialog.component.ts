@@ -13,7 +13,8 @@ export class AddCustomPeriodDialogComponent implements OnInit {
   constructor() {
     const start = new FormControl('', [Validators.required]);
     const end = new FormControl('', [Validators.required]);
-    this.periodForm = new FormGroup({start, end});
+    const preferred = new FormControl(false);
+    this.periodForm = new FormGroup({start, end, preferred});
     this.periodForm.setValidators([
       this.shiftEndValidatorFactory(start, end),
     ]);

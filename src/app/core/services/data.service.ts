@@ -48,7 +48,6 @@ export class DataService {
 
   getAvailabilitiesDoc(month: number, year: number): AngularFirestoreDocument<AvailabilitiesDataModel> | undefined {
     if (this.organizationData) {
-      console.log(this.organizationData);
       return this.firestore
         .collection('availabilities')
         .doc(this.organizationData.id)
@@ -74,7 +73,6 @@ export class DataService {
       // assign user data data
       const oldData = this.userData;
       this.userData = newData;
-      console.log(oldData, newData);
       if (newData.organizations.length !== oldData?.organizations.length) {
 
         if (this.organizationData?.id && !newData.organizations.includes(this.organizationData.id)) {
@@ -90,7 +88,6 @@ export class DataService {
 
   loadOrganizationData(organizationIndex: number): void {
     if (this.userData && this.userData.organizations[organizationIndex]) {
-      console.log('reload');
       // subscribe to given organization data
       this.organizationDataDoc = this.firestore.collection('organizations').doc(this.userData.organizations[organizationIndex]);
       this.organizationDataDoc.valueChanges({idField: 'id'}).pipe(takeUntil(this.organizationUnsubscribe)).subscribe(orgData => {
@@ -245,7 +242,6 @@ export class DataService {
         await batch.commit();
       }
     } catch (e) {
-      console.log(e);
       throw e;
     }
   }
@@ -364,85 +360,98 @@ export class DataService {
     }
   }
 
-  async addAvailabilityPeriod(start: string, end: string, date: Date, availabilitiesDoc: AngularFirestoreDocument<AvailabilitiesDataModel>): Promise<void> {
-    try {
-      await this.firestore.firestore.runTransaction(async transaction => {
-        const doc = await transaction.get(availabilitiesDoc.ref);
-        if (doc.exists) {
-          const avb = doc.data() as AvailabilitiesDataModel;
-          const old = avb.positions.find(pos => {
-            const posDate = pos.timestamp.toDate();
-            return posDate.getUTCDate() === date.getUTCDate();
-          });
-          if (old) {
-            const newPeriods = [];
-            if (old.periods.length) {
-              // We need to merge, so will find index to insert new item and keep ascending order of starts
-              let id = old.periods.findIndex(p => start < p.start);
-              id = id > -1 ? id : old.periods.length;
-              old.periods.splice(id, 0, {start, end});
-              // Then merge
-              newPeriods.push(old.periods[0]);
-              for (const period of old.periods.slice(1)) {
-                const last = newPeriods[newPeriods.length - 1];
-                if (last.end < period.start) {
-                  newPeriods.push(period);
-                } else if (last.end < period.end) {
-                  last.end = period.end;
-                }
+  async addAvailabilityPeriod(start: string,
+                              end: string,
+                              date: Date,
+                              availabilitiesDoc: AngularFirestoreDocument<AvailabilitiesDataModel>,
+                              isPreference = false): Promise<void> {
+    await this.firestore.firestore.runTransaction(async transaction => {
+      const doc = await transaction.get(availabilitiesDoc.ref);
+      if (doc.exists) {
+        const avb = doc.data() as AvailabilitiesDataModel;
+        if (isPreference) {
+          avb.positions = avb.preferredPositions;
+        }
+        const old = avb.positions.find(pos => {
+          return pos.timestamp.seconds === Timestamp.fromDate(date).seconds;
+        });
+        if (old) {
+          const newPeriods = [];
+          if (old.periods.length) {
+            // We need to merge, so will find index to insert new item and keep ascending order of starts
+            let id = old.periods.findIndex(p => start < p.start);
+            id = id > -1 ? id : old.periods.length;
+            old.periods.splice(id, 0, {start, end});
+            // Then merge
+            newPeriods.push(old.periods[0]);
+            for (const period of old.periods.slice(1)) {
+              const last = newPeriods[newPeriods.length - 1];
+              if (last.end < period.start) {
+                newPeriods.push(period);
+              } else if (last.end < period.end) {
+                last.end = period.end;
               }
-            } else {
-              newPeriods.push({start, end});
             }
-            old.periods = newPeriods;
-
           } else {
-            avb.positions.push({
-              timestamp: Timestamp.fromDate(date),
-              periods: [{start, end}]
-            });
+            newPeriods.push({start, end});
           }
+          old.periods = newPeriods;
 
-          transaction.update(availabilitiesDoc.ref, {
-            positions: avb.positions
-          });
         } else {
-          transaction.set(availabilitiesDoc.ref, {
-            positions: [{
-              timestamp: Timestamp.fromDate(date),
-              periods: [{start, end}]
-            }]
+          avb.positions.push({
+            timestamp: Timestamp.fromDate(date),
+            periods: [{start, end}]
           });
         }
-      });
-      console.log('end');
-    } catch (e) {
-      throw e;
-    }
+
+        const data = isPreference ? {preferredPositions: avb.positions} : {positions: avb.positions};
+        transaction.update(availabilitiesDoc.ref, data);
+      } else {
+        const data: AvailabilitiesDataModel = {positions: [], preferredPositions: []};
+        const position = {
+          timestamp: Timestamp.fromDate(date),
+          periods: [{start, end}]
+        };
+        if (isPreference) {
+          data.preferredPositions.push(position);
+        } else {
+          data.positions.push(position);
+        }
+        transaction.set(availabilitiesDoc.ref, data);
+      }
+    });
   }
 
-  async removeAvailabilityPeriod(period: AvailabilityPeriod, date: Date, availabilitiesDoc: AngularFirestoreDocument<AvailabilitiesDataModel>): Promise<void> {
-    try {
-      await this.firestore.firestore.runTransaction(async transaction => {
-        const doc = await transaction.get(availabilitiesDoc.ref);
-        if (doc.exists) {
-          const avb = doc.data() as AvailabilitiesDataModel;
-          const position = avb.positions.find(pos => {
-            const posDate = pos.timestamp.toDate();
-            return posDate.getUTCDate() === date.getUTCDate();
-          });
-          if (position) {
-            console.log(period);
-            console.log(position.periods);
-            position.periods = position.periods.filter(p => p.start !== period.start || p.end !== period.end);
-            console.log(position.periods);
-            transaction.update(availabilitiesDoc.ref, {positions: avb.positions});
-          }
+  async removeAvailabilityPeriod(period: AvailabilityPeriod,
+                                 date: Date, availabilitiesDoc: AngularFirestoreDocument<AvailabilitiesDataModel>,
+                                 isPreference = false): Promise<void> {
+    await this.firestore.firestore.runTransaction(async transaction => {
+      const doc = await transaction.get(availabilitiesDoc.ref);
+      if (doc.exists) {
+        const avb = doc.data() as AvailabilitiesDataModel;
+        if (isPreference) {
+          avb.positions = avb.preferredPositions;
         }
-      });
-    } catch (e) {
-      throw e;
-    }
+        const position = avb.positions.find(pos => {
+          return pos.timestamp.seconds === Timestamp.fromDate(date).seconds;
+        });
+        if (position) {
+          if (!isPreference) {
+            const prefPosition = avb.preferredPositions.find(pos => {
+              return pos.timestamp.seconds === Timestamp.fromDate(date).seconds;
+            });
+            if (prefPosition) {
+              prefPosition.periods = prefPosition.periods.filter(p => {
+                return (p.start < period.start && p.end <= period.start) || (p.start > period.end && p.end > period.end);
+              });
+            }
+          }
+          position.periods = position.periods.filter(p => p.start !== period.start || p.end !== period.end);
+          const data = isPreference ? {preferredPositions: avb.positions} : avb;
+          transaction.update(availabilitiesDoc.ref, data);
+        }
+      }
+    });
   }
 
 }
