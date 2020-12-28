@@ -46,17 +46,6 @@ export class DataService {
     localStorage.setItem(key, value);
   }
 
-  getAvailabilitiesDoc(month: number, year: number): AngularFirestoreDocument<AvailabilitiesDataModel> | undefined {
-    if (this.organizationData) {
-      return this.firestore
-        .collection('availabilities')
-        .doc(this.organizationData.id)
-        .collection(`${month}-${year}`)
-        .doc<AvailabilitiesDataModel>(this.uid);
-    } else {
-      return undefined;
-    }
-  }
 
   loadUserData(uid: string): void {
     this.uid = uid;
@@ -128,9 +117,51 @@ export class DataService {
     }
   }
 
+  getMemberName(uid: string = this.uid || ''): string {
+    if (this.organizationData && this.additionalOrganizationData) {
+      const idx = this.organizationData.members.findIndex(member => member.userId === uid);
+      if (idx > -1) {
+        return this.additionalOrganizationData.membersUsernames[idx];
+      }
+    }
+    return 'Użytkownik';
+  }
+
+  getMemberInfo(uid= this.uid): MemberDataModel | undefined {
+    return this.organizationData?.members.find(member => member.userId === uid);
+  }
+
+  getAvailabilitiesDoc(month: number, year: number): AngularFirestoreDocument<AvailabilitiesDataModel> | undefined {
+    if (this.organizationData) {
+      return this.firestore
+        .collection('availabilities')
+        .doc(this.organizationData.id)
+        .collection(`${month}-${year}`)
+        .doc<AvailabilitiesDataModel>(this.uid);
+    } else {
+      return undefined;
+    }
+  }
+
+  async getAvailabilitiesDataOnce(month: number, year: number, uid = this.uid): Promise<AvailabilitiesDataModel> {
+    if (this.uid && this.organizationData) {
+      const doc = this.firestore
+        .collection('availabilities')
+        .doc(this.organizationData.id)
+        .collection(`${month}-${year}`)
+        .doc<AvailabilitiesDataModel>(uid);
+      const data = (await doc.get().toPromise()).data();
+      if (data) {
+        return data;
+      }
+    }
+    return {positions: [], preferredPositions: []};
+  }
+
   get currentUserMemberInfo(): MemberDataModel | undefined {
     return this.organizationData?.members.find(member => member.userId === this.userData?.id);
   }
+
 
   getOrganizationDocById(organizationId: string): AngularFirestoreDocument<OrganizationDataModel> {
     return this.firestore.collection('organizations').doc(organizationId);
@@ -167,6 +198,7 @@ export class DataService {
     this.organizationUnsubscribe.next(true);
     this.organizationData = undefined;
     this.organizationDataDoc = undefined;
+    this.additionalOrganizationData = undefined;
     this.organizationDataReady = new Subject<boolean>();
     this.router.navigateByUrl('/');
   }
@@ -180,8 +212,8 @@ export class DataService {
     return this.organizationData?.name;
   }
 
-  get username(): string | undefined {
-    return this.userData?.username;
+  get username(): string {
+    return this.userData?.username || 'Użytkownik';
   }
 
   get organizationInviteLink(): string {
@@ -453,5 +485,6 @@ export class DataService {
       }
     });
   }
+
 
 }

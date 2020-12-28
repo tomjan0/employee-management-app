@@ -1,1 +1,36 @@
-<p>availability-view works!</p>
+<div class="controls-bar">
+  <div class="month-controls">
+    <button mat-icon-button (click)="prevMonth()">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <div class="month-title">{{date | date:'MMM yyyy'}}</div>
+    <button mat-icon-button (click)="nextMonth()">
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+  </div>
+</div>
+<div class="table-container" *ngIf="data.length > 0">
+  <table mat-table [dataSource]="data">
+    <ng-container matColumnDef="name" sticky>
+      <th mat-header-cell *matHeaderCellDef><button mat-icon-button (click)="hideNames = !hideNames"><mat-icon>{{hideNames ? 'chevron_right' : 'chevron_left'}}</mat-icon></button></th>
+      <td mat-cell class="username-cell" *matCellDef="let element" >
+        <div class="username" [ngClass]="element.role">{{hideNames ? element.username[0] : element.username}}</div>
+      </td>
+    </ng-container>
+
+    <ng-container *ngFor="let pos of data[0].positions; index as i" [matColumnDef]="'day' + i">
+      <th mat-header-cell *matHeaderCellDef [class.saturday]="pos.date.getDay() === 6"
+          [class.sunday]="pos.date.getDay() === 0"> {{pos.date | date:'EEE d.MM'}}</th>
+      <td mat-cell *matCellDef="let element">
+        <div *ngFor="let period of element.positions[i].periods" class="availability-time"> {{period.start}}
+          - {{period.end}}</div>
+        <div *ngFor="let period of element.positions[i].preferredPeriods"
+             class="availability-time preferred"> {{period.start}}
+          - {{period.end}}</div>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

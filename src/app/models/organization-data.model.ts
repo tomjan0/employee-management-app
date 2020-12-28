@@ -1,3 +1,5 @@
+import {MemberRole} from '../core/types/custom.types';
+
 export interface OrganizationDataModel {
   members: MemberDataModel[];
   name: string;
@@ -6,5 +8,5 @@ export interface OrganizationDataModel {
 
 export interface MemberDataModel {
   userId: string;
-  role: 'owner' | 'manager' | 'member';
+  role: MemberRole;
 }
