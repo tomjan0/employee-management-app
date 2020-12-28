@@ -1,5 +1,4 @@
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {Subject} from 'rxjs';
 import {DataService} from '../../../core/services/data.service';
 import {AvailabilityViewData, LocalAvailabilitiesPositionDataModel} from '../../../models/availabilities-data.model';
 import {MatTable} from '@angular/material/table';
@@ -13,7 +12,6 @@ import {MatTable} from '@angular/material/table';
 export class AvailabilityViewComponent implements OnInit, OnDestroy {
   public date: Date = new Date();
 
-  private readonly ngUnsubscribe = new Subject<boolean>();
   data: AvailabilityViewData[] = [];
   displayedColumns: string[] = [];
   hideNames = false;
@@ -28,8 +26,6 @@ export class AvailabilityViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.ngUnsubscribe.next(true);
-    this.ngUnsubscribe.complete();
   }
 
   changeMonth(diff: 1 | -1): void {
@@ -69,7 +65,8 @@ export class AvailabilityViewComponent implements OnInit, OnDestroy {
     const data = await this.loadAvailabilities(month, year, dayCount);
     this.data = [data];
 
-    if (this.dataService.currentUserMemberInfo?.role === 'owner' && this.dataService.organizationData) {
+    const role = this.dataService.currentUserMemberInfo?.role;
+    if ((role === 'owner' || role === 'manager') && this.dataService.organizationData) {
       for (const member of this.dataService.organizationData.members) {
         if (member.userId !== this.dataService.uid) {
           this.data.push(await this.loadAvailabilities(month, year, dayCount, member.userId));
