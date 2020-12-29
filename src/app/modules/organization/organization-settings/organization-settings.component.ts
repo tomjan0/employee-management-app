@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import ConfigModel, {ConfigShiftModel} from '../../../models/config.model';
+import ConfigModel, {ConfigShiftDialogModel, ConfigShiftModel} from '../../../models/config.model';
 import {DataService} from '../../../core/services/data.service';
 import firebase from 'firebase';
 import {Subject} from 'rxjs';
@@ -70,18 +70,24 @@ export class OrganizationSettingsComponent implements OnInit, OnDestroy {
 
   async addShift(day: DayShort): Promise<void> {
     const dialogRef = this.matDialog.open(AddConfigShiftDialogComponent);
-    const shift: ConfigShiftModel = await dialogRef.afterClosed().toPromise();
+    const res: ConfigShiftDialogModel = await dialogRef.afterClosed().toPromise();
 
-    if (shift) {
-      const start = (shift.start as unknown as string).split(':').map(s => Number(s));
-      const end = (shift.end as unknown as string).split(':').map(s => Number(s));
+    if (res) {
+      const start = res.start.split(':').map(s => Number(s));
+      const end = res.end.split(':').map(s => Number(s));
       const startDate = new Date();
       startDate.setHours(start[0], start[1]);
       const endDate = new Date();
       endDate.setHours(end[0], end[1]);
 
-      shift.start = startDate;
-      shift.end = endDate;
+      const shift: ConfigShiftModel = {
+        end: endDate,
+        maxEmployees: res.maxEmployees,
+        minEmployees: res.minEmployees,
+        start: startDate,
+        name: res.name || 'Zmiana'
+      };
+
       try {
         await this.dataService.addShift(day, shift);
         this.snackService.successSnack('Dodano zmianę');
@@ -147,10 +153,9 @@ export class OrganizationSettingsComponent implements OnInit, OnDestroy {
       try {
         await this.dataService.changeOrganizationName(this.nameControl.value);
         this.snackService.successSnack('Zmieniono nazwę');
-      }
-       catch (e) {
+      } catch (e) {
         this.snackService.errorSnack();
-       }
+      }
     }
 
   }

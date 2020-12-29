@@ -3,7 +3,7 @@
   <form [formGroup]="shiftForm">
     <mat-form-field appearance="standard">
       <mat-label>Nazwa</mat-label>
-      <input matInput placeholder="" formControlName="name" required>
+      <input matInput placeholder="" formControlName="name">
       <mat-error *ngIf="getControl('name').invalid">{{getErrorMessage(getControl('name'))}}</mat-error>
     </mat-form-field>
     <div class="row">

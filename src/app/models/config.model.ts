@@ -11,7 +11,15 @@ export default interface ConfigModel {
 export interface ConfigShiftModel {
   start: Date;
   end: Date;
-  name?: string;
+  name: string;
+  minEmployees: number;
+  maxEmployees: number;
+}
+
+export interface ConfigShiftDialogModel {
+  start: string;
+  end: string;
+  name: string;
   minEmployees: number;
   maxEmployees: number;
 }

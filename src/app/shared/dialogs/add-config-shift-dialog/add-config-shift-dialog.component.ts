@@ -15,9 +15,9 @@ export class AddConfigShiftDialogComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: any,
               private fb: FormBuilder) {
     this.shiftForm = fb.group({
-      name: ['', [Validators.required]],
-      start: [undefined, [Validators.required]],
-      end: [undefined, [Validators.required]],
+      name: [''],
+      start: ['', [Validators.required]],
+      end: ['', [Validators.required]],
       minEmployees: [0, [Validators.required, Validators.min(0)]],
       maxEmployees: [1, [Validators.required]]
     });
