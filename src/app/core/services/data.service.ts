@@ -34,6 +34,11 @@ export class DataService {
   constructor(private firestore: AngularFirestore, private router: Router) {
   }
 
+  // tslint:disable-next-line:typedef
+  get utils() {
+    return firestoreUtils;
+  }
+
   getFirestore(): AngularFirestore {
     return this.firestore;
   }
@@ -127,7 +132,7 @@ export class DataService {
     return 'Użytkownik';
   }
 
-  getMemberInfo(uid= this.uid): MemberDataModel | undefined {
+  getMemberInfo(uid = this.uid): MemberDataModel | undefined {
     return this.organizationData?.members.find(member => member.userId === uid);
   }
 
@@ -222,6 +227,21 @@ export class DataService {
 
   get defaultConfigDoc(): AngularFirestoreDocument<ConfigModel> | undefined {
     return this.organizationDataDoc?.collection('configs').doc('default');
+  }
+
+  async getDefaultConfigOnce(): Promise<ConfigModel> {
+    await this.waitForOrganizationData();
+    const configData = (await this.defaultConfigDoc?.get().toPromise())?.data();
+    if (configData) {
+      for (const [, shifts] of Object.entries(configData)) {
+        for (const shift of (shifts as ConfigShiftModel[])) {
+          shift.start = (shift.start as unknown as Timestamp).toDate();
+          shift.end = (shift.end as unknown as Timestamp).toDate();
+        }
+      }
+      return configData;
+    }
+    return {fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
   }
 
   async acceptMembershipRequest(request: OrganizationMembershipRequestModel): Promise<void> {

@@ -42,15 +42,15 @@
       <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
     </mat-table>
     <div class="buttons">
-      <button color="primary" class="add-shift-btn" (click)="addShift(day)" [disabled]="copyInProgress" mat-button>
+      <button color="primary" class="shift-control-button" (click)="addShift(day)" [disabled]="copyInProgress" mat-button>
         <mat-icon>add</mat-icon>
         <span>Dodaj</span>
       </button>
-      <button color="primary" class="add-shift-btn" (click)="copyShifts(day)" [disabled]="copyInProgress" mat-button>
+      <button color="primary" class="shift-control-button" (click)="copyShifts(day)" [disabled]="copyInProgress" mat-button>
         <mat-icon>copy</mat-icon>
         <span>Skopiuj do reszty dni</span>
       </button>
-      <button color="primary" class="add-shift-btn" (click)="overwriteShifts(day)" [disabled]="copyInProgress"
+      <button color="primary" class="shift-control-button" (click)="overwriteShifts(day)" [disabled]="copyInProgress"
               mat-button>
         <mat-icon>swap_horiz</mat-icon>
         <span>Nadpisz do reszty dni</span>
@@ -67,7 +67,7 @@
       <input matInput placeholder="" [formControl]="nameControl" required>
       <mat-error *ngIf="nameControl.invalid">Nazwa nie może być pusta</mat-error>
     </mat-form-field>
-    <button color="primary" class="add-shift-btn" [disabled]="nameControl.invalid"
+    <button color="primary" class="shift-control-button" [disabled]="nameControl.invalid"
             (click)="changeOrganizationName()"
             mat-button>
       <span>Zmień</span>

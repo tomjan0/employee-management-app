@@ -18,6 +18,17 @@
   </ng-container>
   <ng-template #elseBlock>
     <a mat-list-item disabled>
+      <span>Grafik</span>
+    </a>
+    <a mat-list-item routerLink="/schedule/view" routerLinkActive="active" matRipple>
+      <mat-icon>search</mat-icon>
+      <span>Podgląd</span>
+    </a>
+    <a mat-list-item routerLink="/schedule/edit" routerLinkActive="active" matRipple>
+      <mat-icon>edit</mat-icon>
+      <span>Edycja</span>
+    </a>
+    <a mat-list-item disabled>
       <span>Dyspozycyjność</span>
     </a>
     <a mat-list-item routerLink="/availability/view" routerLinkActive="active" matRipple>

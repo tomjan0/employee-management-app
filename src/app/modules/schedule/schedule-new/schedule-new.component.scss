@@ -1,0 +1,134 @@
+@import "src/styles/variables";
+
+:host {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  padding: 1em;
+  overflow-x: auto;
+}
+
+
+.custom-stepper {
+  background-color: transparent;
+}
+
+.custom-select {
+  width: 8em;
+  margin-right: 1em;
+}
+
+.stepper-nav-buttons {
+  margin-top: 2em;
+  padding-top: .5em;
+  border-top: 2px solid $gray-200;
+}
+
+.step-content {
+  padding: 1em;
+}
+
+.config-link {
+  display: flex;
+  align-items: center;
+  font-size: 1.1em;
+  font-weight: 500;
+
+  mat-icon {
+    width: fit-content;
+    height: fit-content;
+    font-size: 1em;
+    color: $gray-500;
+  }
+}
+
+.add-exception-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  button {
+    margin-top: .25em;
+    margin-bottom: 2em;
+  }
+}
+
+.config-shift-day {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  border: 2px solid $green-200;
+  border-radius: 6px;
+  margin-bottom: 2em;
+  padding: 2em;
+  box-shadow: $shadow-md;
+  overflow: auto;
+
+
+  &.sat {
+    border-color: $yellow-200;
+  }
+
+  &.sun {
+    border-color: $red-200;
+  }
+
+  .day-title {
+    text-transform: capitalize;
+    font-weight: 500;
+    border-bottom: 2px solid $gray-200;
+    //font-size: 1.25em;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    display: flex;
+  }
+
+  .mat-table {
+    overflow: auto;
+    flex-grow: 1;
+    background-color: transparent;
+
+    .mat-header-cell {
+      white-space: nowrap;
+      min-width: 5.5em;
+      overflow:visible;
+    }
+    .mat-table-sticky {
+      width: fit-content;
+      background-color: $gray-100;
+      padding-right: 0;
+      min-width: unset;
+    }
+
+  }
+
+  .mat-column-start, .mat-column-end {
+    font-weight: 500;
+  }
+
+  .shift-control-button {
+    margin-top: 1em;
+  }
+
+  .delete-btn {
+    //color: $red-400;
+  }
+
+  .buttons {
+    display: flex;
+    flex-flow: row wrap;
+    //justify-content: center;
+
+    button {
+      display: flex;
+      align-items: center;
+
+      mat-icon {
+        margin-right: .25em;
+      }
+    }
+  }
+}
+

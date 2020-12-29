@@ -19,7 +19,12 @@ export interface ConfigShiftModel {
 export interface ConfigShiftDialogModel {
   start: string;
   end: string;
-  name: string;
+  name?: string;
   minEmployees: number;
   maxEmployees: number;
+}
+
+export interface ConfigExceptionShift {
+  date: Date;
+  shifts: ConfigShiftModel[];
 }
