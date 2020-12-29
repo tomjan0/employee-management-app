@@ -1,0 +1,42 @@
+@import "src/styles/variables";
+
+:host {
+  display: flex;
+  //flex-grow: 1;
+  flex-direction: column;
+  padding: 1em;
+}
+
+.cards {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .card {
+    border-radius: 6px;
+    padding: 2em;
+    font-size: 1.25em;
+    font-weight: 500;
+    border: 2px solid $gray-300;
+    box-shadow: $shadow-md;
+    margin-right: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform .1s;
+
+    &:first-child {
+      border: 2px dashed $gray-500;
+      background-color: transparent;
+      box-shadow: none;
+    }
+
+    &:hover, &:focus {
+      outline: none;
+      transform: scale(1.2);
+    }
+
+  }
+}

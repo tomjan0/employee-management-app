@@ -1,0 +1,3 @@
+<h2>Prosisz do dołączenie do organizacji <span>{{organizationName}}</span></h2>
+<button *ngIf="status === 'not-started'" mat-button color="accent" (click)="confirmJoin()">Potwierdź</button>
+<mat-spinner *ngIf="status === 'in-progress'"></mat-spinner>

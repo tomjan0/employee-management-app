@@ -1,21 +1,38 @@
 import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {SignInComponent} from './modules/authentication/sign-in/sign-in.component';
-import {SignUpComponent} from './modules/authentication/sign-up/sign-up.component';
-import {canActivate, redirectLoggedInTo} from '@angular/fire/auth-guard';
-import {ResetPasswordComponent} from './modules/authentication/reset-password/reset-password.component';
-import {ActionsManagerComponent} from './modules/authentication/actions-manager/actions-manager.component';
+import {ActivatedRouteSnapshot, RouterModule, RouterStateSnapshot, Routes} from '@angular/router';
+import {canActivate, redirectUnauthorizedTo} from '@angular/fire/auth-guard';
+import {NoOrganizationChosenComponent} from './core/views/no-organization-chosen/no-organization-chosen.component';
+import {NoOrganizationChosenGuard} from './guards/no-organization-chosen.guard';
 
-const redirectLoggedInToHome = () => redirectLoggedInTo('/');
+const redirectUnauthorizedToAuth = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return redirectUnauthorizedTo(`/auth?followUrl=${btoa(state.url)}`);
+};
 
 const routes: Routes = [
   {
-    path: 'auth', children: [
-      {path: '', pathMatch: 'full', redirectTo: 'sign-in'},
-      {path: 'sign-in', component: SignInComponent, ...canActivate(redirectLoggedInToHome)},
-      {path: 'sign-up', component: SignUpComponent, ...canActivate(redirectLoggedInToHome)},
-      {path: 'reset-password', component: ResetPasswordComponent, ...canActivate(redirectLoggedInToHome)},
-      {path: 'actions-manager', component: ActionsManagerComponent}]
+    path: 'auth',
+    loadChildren: () => import('./modules/authentication/authentication.module').then(m => m.AuthenticationModule)
+  },
+  {
+    path: 'availability',
+    loadChildren: () => import('./modules/availability/availability.module').then(m => m.AvailabilityModule),
+    canActivate: [NoOrganizationChosenGuard, ...canActivate(redirectUnauthorizedToAuth).canActivate],
+    data: canActivate(redirectUnauthorizedToAuth).data
+  },
+  {
+    path: 'organization',
+    loadChildren: () => import('./modules/organization/organization.module').then(m => m.OrganizationModule),
+    ...canActivate(redirectUnauthorizedToAuth)
+  },
+  {
+    path: 'schedule',
+    loadChildren: () => import('./modules/schedule/schedule.module').then(m => m.ScheduleModule),
+    canActivate: [NoOrganizationChosenGuard, ...canActivate(redirectUnauthorizedToAuth).canActivate],
+    data: canActivate(redirectUnauthorizedToAuth).data
+  },
+  {
+    path: 'no-organization-chosen',
+    component: NoOrganizationChosenComponent
   }
 ];
 

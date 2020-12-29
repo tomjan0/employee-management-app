@@ -1,0 +1,87 @@
+<div class="controls-bar">
+  <div class="month-controls">
+    <button mat-icon-button (click)="prevMonth()">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <div class="month-title">{{date | date:'MMM yyyy'}}</div>
+    <button mat-icon-button (click)="nextMonth()">
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+  </div>
+  <mat-button-toggle-group [vertical]="isMobile" class="view-toggles" (change)="handleViewModeChange($event)"
+                           [value]="viewMode">
+    <mat-button-toggle value="list" aria-label="Text align left">
+      <mat-icon>view_list</mat-icon>
+    </mat-button-toggle>
+    <mat-button-toggle value="grid" aria-label="Text align center">
+      <mat-icon>view_module</mat-icon>
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+<div class="positions" [class.is-mobile]="isMobile" [class.list-view]="viewMode === 'list'"
+     [class.grid-view]="viewMode === 'grid'">
+  <ng-container *ngFor="let pos of data; index as i">
+    <div *ngIf="pos.date.getDay() === 1 || i === 0" class="week-header">{{getWeekHeader(pos.date)}}</div>
+    <div class="position" [class.expired]="pos.past">
+      <div class="position-header" [class.sunday]="pos.date.getDay() === 0"
+           [class.saturday]="pos.date.getDay() === 6">
+        <div class="day">{{pos.date | date:'EEEE'}}</div>
+        <div class="date">{{pos.date | date:'shortDate'}}</div>
+      </div>
+      <div class="config-shifts inner-card">
+        <h4>Dostępne zmiany</h4>
+        <div class="config-shift" *ngFor="let shift of getConfigShifts(pos.date)">
+          <div class="shift-info">
+            <div>{{shift.name}}</div>
+            <div class="shift-time"
+                 [class.included]="isIncluded(shift.start, shift.end, pos.periods)"
+                 [class.preferred]="isIncluded(shift.start,shift.end, pos.preferredPeriods)">{{shift.start | date:'shortTime'}}
+              - {{shift.end | date:'shortTime'}}</div>
+          </div>
+          <button (click)="addPeriodFromConfig(shift.start, shift.end, pos.date)"
+                  *ngIf="!isIncluded(shift.start,shift.end,pos.periods); else prefer"
+                  [disabled]="pos.past || status === 'in-progress' || isIncluded(shift.start, shift.end, pos.periods)"
+                  class="add-period-btn"
+                  mat-button color="accent">Dodaj
+          </button>
+          <ng-template #prefer>
+            <button (click)="addPeriodFromConfig(shift.start, shift.end, pos.date, true)"
+                    [disabled]="pos.past || status === 'in-progress' || isIncluded(shift.start, shift.end, pos.preferredPeriods)"
+                    class="add-period-btn"
+                    mat-button color="accent">Preferuj
+            </button>
+          </ng-template>
+        </div>
+        <button class="custom-time-btn" mat-stroked-button [disabled]="pos.past || status === 'in-progress'"
+                (click)="addCustomPeriod(pos.date)">Dodaj dowolny przedział
+        </button>
+      </div>
+      <div class="user-availabilities inner-card">
+        <h4>Twoja dyspozycyjność</h4>
+        <div class="availability-periods">
+          <div *ngFor="let period of pos.periods" class="availability-period">
+            <div class="availability-time"> {{period.start}}
+              - {{period.end}}</div>
+            <button color="warn" mat-icon-button [disabled]="pos.past || status === 'in-progress'"
+                    (click)="removePeriod(period,pos.date)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="user-availabilities inner-card">
+        <h4>Twoje preferencje</h4>
+        <div class="availability-periods">
+          <div *ngFor="let period of pos.preferredPeriods" class="availability-period">
+            <div class="availability-time preferred"> {{period.start}}
+              - {{period.end}}</div>
+            <button color="warn" mat-icon-button [disabled]="pos.past || status === 'in-progress'"
+                    (click)="removePeriod(period,pos.date)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

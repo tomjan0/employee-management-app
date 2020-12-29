@@ -1,0 +1,48 @@
+@import "src/styles/variables";
+
+.request-card {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 1em;
+  align-items: center;
+
+  background-color: white;
+  box-shadow: $shadow-md;
+  padding: 1em;
+  border-radius: 6px;
+
+  .request-info {
+    display: flex;
+    flex-direction: column;
+    margin-right: 3em;
+
+    .request-username {
+      font-size: 1.25em;
+    }
+
+    .request-time {
+      color: $gray-400;
+    }
+  }
+}
+
+.empty-prompt {
+  display: flex;
+  //justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  h2 {
+    color: $gray-400;
+  }
+
+
+  mat-icon {
+    width: 100%;
+    text-align: center;
+    font-size: 16em;
+    line-height: 1.2em;
+    color: $gray-200;
+  }
+}
+

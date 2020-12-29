@@ -1,0 +1,38 @@
+@import "src/styles/variables";
+
+.options {
+  display: flex;
+  flex-direction: column;
+
+  button {
+    text-transform: capitalize;
+    padding-top: .5em;
+    padding-bottom: .5em;
+
+    &.owner {
+      color: $red-500
+    }
+
+    &.manager {
+      color: $blue-500;
+    }
+
+    &.member {
+      color: $green-500;
+    }
+
+    &.active {
+      &.owner {
+        background-color: $red-200;
+      }
+
+      &.manager {
+        background-color: $blue-200;
+      }
+
+      &.member {
+        background-color: $green-200;
+      }
+    }
+  }
+}

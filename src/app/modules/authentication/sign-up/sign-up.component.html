@@ -29,9 +29,10 @@
     </mat-form-field>
     <mat-form-field appearance="standard">
       <mat-label>Nazwa organizacji</mat-label>
-      <input matInput formControlName="organizationName" required>
+      <input matInput formControlName="organizationName">
+      <mat-hint>Wypełnienie tego pola sprawi, że utworzysz swoją organizację</mat-hint>
       <!--        <mat-hint>To ustawienie możesz później zmienić</mat-hint>-->
-      <mat-error *ngIf="organizationName.invalid">{{getErrorMessage(organizationName)}}</mat-error>
+<!--      <mat-error *ngIf="organizationName.invalid">{{getErrorMessage(organizationName)}}</mat-error>-->
     </mat-form-field>
     <button [attr.aria-label]="'Sign in'" type="submit"
             [disabled]="!signUpForm.valid || isInProgress"

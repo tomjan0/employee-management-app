@@ -1,35 +1,61 @@
 import {Injectable} from '@angular/core';
-import RegisterFormModel from '../../shared/models/register-form.model';
+import RegisterFormModel from '../../models/register-form.model';
 import {AngularFireAuth} from '@angular/fire/auth';
 import {AngularFirestore} from '@angular/fire/firestore';
+import {Router} from '@angular/router';
+import {SnackService} from './snack.service';
+import firebase from 'firebase/app';
+import {DataService} from './data.service';
+import UserDataModel from '../../models/user-data.model';
+import {OrganizationDataModel} from '../../models/organization-data.model';
+import User = firebase.User;
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  user;
+  userObs;
+  user: User | null = null;
 
-  constructor(private fireAuth: AngularFireAuth, private firestore: AngularFirestore) {
+  constructor(private fireAuth: AngularFireAuth,
+              private firestore: AngularFirestore,
+              private router: Router,
+              private snackService: SnackService,
+              private dataService: DataService) {
     fireAuth.useDeviceLanguage();
-    this.user = fireAuth.user;
+    this.userObs = fireAuth.user;
+    this.userObs.subscribe(user => {
+      this.user = user;
+      if (user) {
+        dataService.loadUserData(user.uid);
+      }
+    });
   }
 
+
   async createAccount(registerForm: RegisterFormModel): Promise<void> {
-    console.log(registerForm);
     try {
       const credentials = await this.fireAuth.createUserWithEmailAndPassword(registerForm.email, registerForm.password);
+      if (registerForm.username) {
+        await credentials.user?.updateProfile({displayName: registerForm.username});
+      }
       const uid = credentials.user?.uid;
-      const organizationDocument = await this.firestore.collection('organizations').add({
-        name: registerForm.organizationName,
-        owner: uid,
-        members: [],
-      });
-      const userDocument = this.firestore.collection('users').doc(uid);
-      await userDocument.set({
-        username: registerForm.username,
-        organizations: [organizationDocument.id]
-      });
-      credentials.user?.sendEmailVerification();
+      if (uid) {
+        const organizations = [];
+        if (registerForm.organizationName) {
+          const organizationDocument = await this.firestore.collection<OrganizationDataModel>('organizations').add({
+            name: registerForm.organizationName,
+            members: [{userId: uid, role: 'owner'}]
+          });
+          organizations.push(organizationDocument.id);
+        }
+        const userDocument = this.firestore.collection('users').doc<UserDataModel>(uid);
+        await userDocument.set({
+          username: registerForm.username ? registerForm.username : registerForm.email.split('@')[0],
+          organizations
+        });
+        credentials.user?.sendEmailVerification();
+      }
     } catch (authError) {
       throw authError;
     }
@@ -76,6 +102,10 @@ export class AuthService {
   }
 
   async signOut(): Promise<void> {
+    this.user = null;
+    this.dataService.signOut();
     await this.fireAuth.signOut();
+    await this.router.navigate(['/']);
+    this.snackService.successSnack('Wylogowano pomyślnie!');
   }
 }

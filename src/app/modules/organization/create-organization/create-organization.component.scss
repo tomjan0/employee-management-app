@@ -1,0 +1,42 @@
+@import "src/styles/variables";
+
+:host {
+  width: 100%;
+  @extend .container-inner;
+}
+
+.container-inner {
+  max-width: 20em;
+  display: flex;
+  flex-direction: column;
+  border-radius: $radius;
+  padding: 2em;
+  align-self: center;
+  border: 1px solid $gray-300;
+  box-shadow: $shadow-md;
+  background-color: $gray-100;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+
+  button[type=submit] {
+    font-size: 1em;
+    padding: .25em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+  a {
+    margin-top: 1em;
+    font-size: .75em;
+    text-align: center;
+    color: $gray-500;
+
+    &:visited {
+      color: $gray-500
+    }
+  }
+
+}

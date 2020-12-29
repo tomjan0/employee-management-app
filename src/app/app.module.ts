@@ -11,7 +11,6 @@ import {AngularFireAuthModule} from '@angular/fire/auth';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
 import {AngularFireFunctionsModule} from '@angular/fire/functions';
 import {MaterialModule} from './material.module';
-import {AuthenticationModule} from './modules/authentication/authentication.module';
 import {CoreModule} from './core/core.module';
 
 @NgModule({
@@ -23,16 +22,16 @@ import {CoreModule} from './core/core.module';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAnalyticsModule,
     AngularFireAuthModule,
-    AngularFirestoreModule,
+    AngularFirestoreModule.enablePersistence(),
     AngularFireFunctionsModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     MaterialModule,
-    AuthenticationModule,
     CoreModule
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {
+
 }

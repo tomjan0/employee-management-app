@@ -1,11 +1,11 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
-import {FirebaseActions, ProcessingStatuses} from '../AuthEnums';
+import {FirebaseActions, ProcessingStatuses} from '../../../core/enums/AuthEnums';
 import {AuthService} from '../../../core/services/auth.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
+import {SnackService} from '../../../core/services/snack.service';
 
 @Component({
   selector: 'app-actions-manager',
@@ -29,13 +29,13 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private snackBar: MatSnackBar,
+    private snackService: SnackService,
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder
   ) {
     this.newPasswordForm = fb.group({
-      password: ['', Validators.required, Validators.minLength(6)],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['']
     });
     this.newPasswordForm.setValidators(this.passwordMatchValidatorFactory(
@@ -62,7 +62,7 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
               this.codeChecked = true;
               this.status = this.ProcessingStatuses.NotStarted;
             } catch (codeError) {
-              this.wrongLink();
+              this.wrongLink(codeError);
             }
             break;
           }
@@ -71,7 +71,7 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
               await this.authService.verifyEmail(this.code);
               this.status = this.ProcessingStatuses.Succeeded;
             } catch (codeError) {
-              this.wrongLink();
+              this.wrongLink(codeError);
             }
             break;
           }
@@ -88,10 +88,19 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
   }
 
-  wrongLink(): void {
-    this.status = ProcessingStatuses.Succeeded;
-    this.snackBar.open('Niepoprawny link.')._dismissAfter(5000);
-    // this.router.navigate(['..'], {relativeTo: this.route});
+  wrongLink(reason?: any): void {
+    console.log(reason);
+    let message = 'Niepoprawny link';
+    if (reason && reason.code) {
+      switch (reason.code) {
+        case 'auth/expired-action-code':
+          message = 'Link wygasł';
+          break;
+      }
+    }
+    this.status = ProcessingStatuses.Failed;
+    this.snackService.errorSnack(message, 5000);
+    this.router.navigate(['..'], {relativeTo: this.route});
   }
 
 
@@ -130,7 +139,7 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
       try {
         await this.authService.setNewPassword(this.code, this.newPasswordForm.controls.password.value);
         this.status = this.ProcessingStatuses.Succeeded;
-        this.snackBar.open('Hasło zmienione pomyślnie!')._dismissAfter(5000);
+        this.snackService.successSnack('Hasło zmienione pomyślnie!');
         await this.router.navigate(['..', 'sign-in'], {relativeTo: this.route});
       } catch (authError) {
         console.log(authError);
@@ -140,7 +149,7 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
             break;
           }
           default: {
-            this.snackBar.open('Wystąpił błąd')._dismissAfter(5000);
+            this.snackService.errorSnack('Wystąpił błąd');
             break;
           }
         }

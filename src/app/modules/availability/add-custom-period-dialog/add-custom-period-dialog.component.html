@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>Dodaj dowolny przedział</h2>
+<mat-dialog-content>
+  <form [formGroup]="periodForm">
+    <mat-form-field appearance="standard">
+      <mat-label>Początek</mat-label>
+      <input matInput type="time" formControlName="start" required>
+      <mat-error *ngIf="getControl('start').invalid">{{getErrorMessage(getControl('start'))}}</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+      <mat-label>Koniec</mat-label>
+      <input matInput type="time" formControlName="end" required>
+      <mat-error *ngIf="getControl('end').invalid">{{getErrorMessage(getControl('end'))}}</mat-error>
+    </mat-form-field>
+    <mat-checkbox formControlName="preferred">Preferuj</mat-checkbox>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button color="warn" type="button" mat-button mat-dialog-close>Anuluj</button>
+  <button mat-raised-button color="primary" type="submit" [disabled]="periodForm.invalid"
+          matDialogClose="submit" [mat-dialog-close]="periodForm.value">Zatwierdź
+  </button>
+</mat-dialog-actions>

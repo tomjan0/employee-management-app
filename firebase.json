@@ -19,10 +19,20 @@
       ],
       "rewrites": [
         {
+          "source": "/pl/**",
+          "destination": "/pl/index.html"
+        },
+        {
           "source": "**",
-          "destination": "/index.html"
+          "destination": "/pl/index.html"
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run lint",
+      "npm --prefix \"$RESOURCE_DIR\" run build"
+    ]
+  }
 }

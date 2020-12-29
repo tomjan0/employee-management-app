@@ -1,0 +1,21 @@
+@import "src/styles/variables";
+
+:host {
+  display: flex;
+  //justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+h2 {
+  color: $gray-400;
+}
+
+
+mat-icon {
+  width: 100%;
+  text-align: center;
+  font-size: 16em;
+  line-height: 1.2em;
+  color: $gray-200;
+}

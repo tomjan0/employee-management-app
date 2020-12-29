@@ -1,9 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {AuthService} from '../../../core/services/auth.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {ProcessingStatuses} from '../AuthEnums';
-import {Router} from '@angular/router';
+import {ProcessingStatuses} from '../../../core/enums/AuthEnums';
+import {ActivatedRoute, Router} from '@angular/router';
+import {SnackService} from '../../../core/services/snack.service';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'app-sign-in',
@@ -17,11 +18,21 @@ export class SignInComponent implements OnInit {
   hide = true;
   processingStatuses = ProcessingStatuses;
   status = this.processingStatuses.NotStarted;
+  redirect: string | undefined;
 
-  constructor(private authService: AuthService, private snackBar: MatSnackBar, private router: Router) {
+  constructor(private authService: AuthService,
+              private snackService: SnackService,
+              private router: Router,
+              private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
+    this.extractRedirectUrl();
+  }
+
+  async extractRedirectUrl(): Promise<void> {
+    const params = await this.route.queryParams.pipe(take(1)).toPromise();
+    this.redirect = params.followUrl ? atob(params.followUrl) : undefined;
   }
 
   getErrorMessage(field: FormControl): string {
@@ -56,9 +67,9 @@ export class SignInComponent implements OnInit {
       try {
         this.status = this.processingStatuses.InProgress;
         await this.authService.signIn(this.signInForm.value.email, this.signInForm.value.password);
-        this.snackBar.open('Zalogowano pomyślnie!')._dismissAfter(5000);
+        this.snackService.successSnack('Zalogowano pomyślnie!');
         this.status = this.processingStatuses.Succeeded;
-        await this.router.navigateByUrl('/');
+        await this.router.navigateByUrl(this.redirect ? this.redirect : '/');
       } catch (authError) {
         console.log(authError);
         switch (authError.code) {
@@ -71,15 +82,16 @@ export class SignInComponent implements OnInit {
             break;
           }
           case 'auth/too-many-requests': {
-            this.snackBar.open('Dostęp do tego konta został zablokowany ze względu na dużą ilość nieudanych prób logowania. Zresetuj hasło, bądź sróbuj ponownie później.', 'Resetuj hasło', {
+            const resetSnack = this.snackService.raw.open('Dostęp do tego konta został zablokowany ze względu na dużą ilość nieudanych prób logowania. Zresetuj hasło, bądź sróbuj ponownie później.', 'Resetuj hasło', {
               duration: 10000,
             });
-            // this.email.setErrors({accountBlocked: true});
-            // this.password.setErrors({accountBlocked: true});
+            resetSnack.onAction().pipe(take(1)).subscribe(() => {
+              this.router.navigate(['..', 'reset-password'], {relativeTo: this.route, queryParams: {email: this.email.value}});
+            });
             break;
           }
           default: {
-            this.snackBar.open('Wystąpił błąd')._dismissAfter(5000);
+            this.snackService.errorSnack('Wystąpił błąd');
             break;
           }
         }

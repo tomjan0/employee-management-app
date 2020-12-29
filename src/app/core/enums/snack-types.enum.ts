@@ -1,6 +1,8 @@
 enum SnackTypes {
   Success,
-  Error
+  Error,
+  Warning,
+  Info
 }
 
 export default SnackTypes;

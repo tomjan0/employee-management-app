@@ -1,0 +1,116 @@
+<mat-vertical-stepper class="custom-stepper" linear>
+  <mat-step [stepControl]="month">
+    <ng-template matStepLabel>Wybierz miesiąc i rok</ng-template>
+    <div class="step-content">
+      <mat-form-field class="custom-select" appearance="outline">
+        <mat-label>Rok</mat-label>
+        <mat-select [formControl]="year" required (selectionChange)="month.reset()">
+          <mat-option [value]="currentYear">{{currentYear}}</mat-option>
+          <mat-option [value]="currentYear + 1">{{currentYear + 1}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="custom-select" appearance="outline">
+        <mat-label>Miesiąc</mat-label>
+        <mat-select [formControl]="month" (selectionChange)="handleMonthChange()" required>
+          <mat-option *ngFor="let m of monthOptions" [value]="m">{{m}}</mat-option>
+          <mat-option *ngIf="monthOptions.length === 0" disabled>Najpierw wybierz rok</mat-option>
+        </mat-select>
+        <mat-error *ngIf="month.hasError('required')">Wybierz miesiąc</mat-error>
+        <mat-error *ngIf="month.hasError('alreadyExists')">Już istnieje</mat-error>
+      </mat-form-field>
+
+      <div class="stepper-nav-buttons">
+        <button color="primary" mat-button matStepperNext>Dalej</button>
+      </div>
+    </div>
+  </mat-step>
+  <mat-step>
+    <ng-template matStepLabel>Potwierdź konfigurację</ng-template>
+    <div class="step-content">
+      <div class="config-link"><a target="_blank" href="../../../organization/settings">Sprawdź obecną konfigurację</a>
+        <mat-icon>open_in_new</mat-icon>
+      </div>
+      <div class="stepper-nav-buttons">
+        <button mat-button matStepperPrevious color="warn">Wstecz</button>
+        <button mat-button matStepperNext color="primary">Dalej</button>
+      </div>
+    </div>
+  </mat-step>
+  <mat-step>
+    <ng-template matStepLabel>Dodaj wyjątki</ng-template>
+    <div class="step-content">
+      <form class="add-exception-form" [formGroup]="exceptionForm" (ngSubmit)="addException()">
+        <mat-form-field appearance="outline">
+          <mat-label>Data</mat-label>
+          <input matInput [matDatepicker]="dp" [formControl]="exceptionDate" [min]="exceptionDateMin"
+                 [max]="exceptionDateMax" required>
+          <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+          <mat-datepicker #dp>
+          </mat-datepicker>
+          <mat-error *ngIf="exceptionDate.invalid">Nieprawidłowa data</mat-error>
+        </mat-form-field>
+
+        <button type="submit" mat-raised-button color="primary" [disabled]="exceptionDate.invalid">Dodaj wyjątek
+        </button>
+      </form>
+      <div class="config-shift-day" [ngClass]="getClass(exception)" *ngFor="let exception of exceptions; index as i">
+        <h3 class="day-title">{{exception.date | date:'fullDate'}}</h3>
+        <div class="table-container">
+          <table mat-table [dataSource]="exception.shifts">
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef> Nazwa</th>
+              <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="start">
+              <th mat-header-cell *matHeaderCellDef> Początek</th>
+              <td mat-cell *matCellDef="let element"> {{element.start | date:'shortTime'}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="end">
+              <th mat-header-cell *matHeaderCellDef> Koniec</th>
+              <td mat-cell *matCellDef="let element"> {{element.end | date:'shortTime'}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="maxEmployees">
+              <th mat-header-cell *matHeaderCellDef> Maks. prac.</th>
+              <td mat-cell *matCellDef="let element"> {{element.maxEmployees}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="minEmployees">
+              <th mat-header-cell *matHeaderCellDef> Min. prac.</th>
+              <td mat-cell *matCellDef="let element"> {{element.minEmployees}} </td>
+            </ng-container>
+
+            <ng-container stickyEnd matColumnDef="delete">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let element">
+                <button color="warn" class="delete-btn" mat-icon-button (click)="removeShift(exception, element)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+
+            <tr mat-header-row
+                *matHeaderRowDef="['name', 'start', 'end', 'minEmployees', 'maxEmployees', 'delete']"></tr>
+            <tr mat-row
+                *matRowDef="let row; columns: ['name', 'start', 'end', 'minEmployees', 'maxEmployees', 'delete'];"></tr>
+          </table>
+        </div>
+        <div class="buttons">
+          <button color="primary" class="shift-control-button" (click)="addShift(exception)" mat-button>
+            <mat-icon>add</mat-icon>
+            <span>Dodaj</span>
+          </button>
+          <button color="warn" class="shift-control-button" mat-button (click)="removeException(exception)">Usuń</button>
+        </div>
+
+      </div>
+      <div class="stepper-nav-buttons">
+        <button mat-button matStepperPrevious color="warn">Wstecz</button>
+        <button mat-button (click)="save()" color="primary">Zapisz</button>
+      </div>
+    </div>
+  </mat-step>
+</mat-vertical-stepper>

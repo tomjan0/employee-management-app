@@ -1,0 +1,232 @@
+@import "src/styles/variables";
+
+:host {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  //margin-top: 2em;
+  padding: 1em;
+}
+
+.controls-bar {
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+
+  .view-toggles {
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: flex;
+  }
+
+  .month-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 1.25em;
+
+    .month-title {
+      text-transform: capitalize;
+    }
+  }
+}
+
+.positions {
+  display: flex;
+  max-width: 1600px;
+  margin: auto;
+
+  &.list-view {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &.grid-view {
+    flex-flow: row wrap;
+    justify-content: center;
+  }
+
+  &.is-mobile {
+    .position {
+      width: 100%;
+    }
+  }
+
+  &:not(.is-mobile) {
+    .position {
+      .position-header {
+        min-width: 12em;
+
+      }
+    }
+  }
+
+  .week-header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2em;
+    margin-bottom: 2em;
+
+    font-size: 1.25em;
+    text-transform: uppercase;
+    color: $gray-500;
+    letter-spacing: .25em;
+    font-weight: 500;
+  }
+
+  .position {
+    display: flex;
+    flex-direction: column;
+    //align-items: center;
+    margin: .5em;
+    //background-color: white;
+    border: 2px solid $gray-300;
+    border-radius: 6px;
+    font-weight: 500;
+    width: fit-content;
+    padding: 1em 2em;
+    box-shadow: $shadow-md;
+
+    &.expired {
+      opacity: .5;
+    }
+
+    .position-header {
+      display: flex;
+      //width: 100%;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid;
+      border-bottom-color: $green-500;
+      color: $green-500;
+
+      padding: .5em;
+
+      &.sunday {
+        color: $red-500;
+        border-bottom-color: $red-500;
+      }
+
+      &.saturday {
+        color: $yellow-500;
+        border-bottom-color: $yellow-500;
+      }
+
+      .day {
+        text-transform: capitalize;
+      }
+    }
+
+
+    .inner-card {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      border-radius: 6px;
+      background-color: $gray-100;
+      padding: 1em;
+
+      h4 {
+        border-bottom: 2px solid $gray-200;
+        font-weight: 500;
+      }
+    }
+
+    .config-shifts {
+
+      .config-shift {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+
+        &:not(:first-child) {
+          margin-top: 1em;
+        }
+
+        button {
+          margin-left: 1em;
+        }
+
+        .shift-info {
+          display: flex;
+          flex-grow: 1;
+          align-items: center;
+          justify-content: space-between;
+
+          .shift-time {
+            margin-left: 1em;
+            padding: .5em 1em;
+            border-radius: 999px;
+            color: $blue-500;
+            border: 2px solid $blue-500;
+            //border: 2px solid $gray-500;
+            //color: $gray-500;
+
+            &.included {
+              //background-color: $green-200;
+              border-color: $green-500;
+              color: $green-500;
+
+              &.preferred {
+                border-color: $yellow-500;
+                color: $yellow-500;
+              }
+            }
+          }
+        }
+
+        .add-period-btn {
+          width: 6em;
+        }
+      }
+
+      .custom-time-btn {
+        margin-top: 1em;
+      }
+    }
+
+    .user-availabilities {
+      .availability-periods {
+        display: flex;
+        flex-direction: column;
+
+        .availability-period {
+
+          display: flex;
+          flex-grow: 1;
+          align-items: center;
+
+          &:not(:first-child) {
+            margin-top: 1em;
+          }
+
+          .availability-time {
+            //border: 2px solid $gray-500;
+            //color: $gray-500;
+            //color: $blue-500;
+            //border: 2px solid $blue-500;
+            background-color: $green-500;
+            color: white;
+            border-radius: 6px;
+            padding: .5em 1em;
+            flex-grow: 1;
+            font-weight: 500;
+            text-align: center;
+
+            &.preferred {
+              background-color: $yellow-500;
+            }
+          }
+
+        }
+      }
+    }
+  }
+}

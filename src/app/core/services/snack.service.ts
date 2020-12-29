@@ -11,19 +11,31 @@ export class SnackService {
   constructor(private snackbar: MatSnackBar) {
   }
 
-  successSnack(message: string, duration: number = 5000): void {
+  successSnack(message: string, duration?: number): void {
+    this.openSnack(message, duration, SnackTypes.Success);
+  }
+
+  errorSnack(message: string = 'Wystąpił błąd', duration?: number): void {
+    this.openSnack(message, duration, SnackTypes.Error);
+  }
+
+  warningSnack(message: string, duration?: number): void {
+    this.openSnack(message, duration, SnackTypes.Warning);
+  }
+
+  infoSnack(message: string, duration: number = 2000): void {
+    this.openSnack(message, duration, SnackTypes.Info);
+  }
+
+  openSnack(message: string, duration: number = 5000, type: SnackTypes): void {
     const data = {
       message,
-      type: SnackTypes.Success
+      type
     };
     this.snackbar.openFromComponent(CustomSnackComponent, {duration, data: JSON.stringify(data)});
   }
 
-  errorSnack(message: string, duration: number = 5000): void {
-    const data = {
-      message,
-      type: SnackTypes.Error
-    };
-    this.snackbar.openFromComponent(CustomSnackComponent, {duration, data: JSON.stringify(data)});
+  get raw(): MatSnackBar {
+    return this.snackbar;
   }
 }

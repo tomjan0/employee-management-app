@@ -1,0 +1,117 @@
+@import "src/styles/variables";
+
+:host {
+  @extend .cards-container;
+}
+
+.cards-container {
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 1em;
+}
+
+.share-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1em;
+  align-items: flex-start;
+  color: $gray-600;
+  margin-top: 1em;
+
+  .share-card-title {
+    font-size: 1.25em;
+    margin-bottom: 1em;
+    font-weight: 500;
+  }
+
+  .share-card-content {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+
+    input {
+      padding: .75em;
+      font-size: 1.1em;
+      width: 100%;
+      border-radius: 6px;
+      background-color: $blue-100;
+      color: $blue-400;
+      font-weight: 600;
+      outline: none;
+      border: none;
+      text-overflow: ellipsis;
+      margin-right: 1em;
+    }
+
+    button {
+      flex-shrink: 0;
+    }
+  }
+}
+
+.member-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1em;
+  align-items: flex-start;
+
+  background-color: white;
+  box-shadow: $shadow-md;
+  padding: 1em;
+  border-radius: 6px;
+
+  .member-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-bottom: 1em;
+    width: 100%;
+
+    .member-name {
+      font-size: 1.1em;
+      margin-right: 1em;
+      font-weight: 500;
+    }
+
+    .member-role {
+      border-radius: 999px;
+      font-weight: 500;
+      padding: .5em 1em;
+
+      &.owner {
+        background-color: $red-200;
+        color: $red-500;
+      }
+
+      &.manager {
+        background-color: $blue-200;
+        color: $blue-500;
+      }
+
+      &.member {
+        background-color: $green-200;
+        color: $green-500;
+      }
+
+      &.yourself {
+        margin-left: .5em;
+        background-color: $gray-200;
+        color: $gray-500;
+      }
+    }
+  }
+
+  .member-actions {
+    width: 100%;
+    display: flex;
+    padding-top: 1em;
+    border-top: 1px solid $gray-300;
+
+    button {
+      width: 100%;
+    }
+  }
+
+}
