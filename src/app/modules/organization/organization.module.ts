@@ -11,7 +11,6 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {CreateOrganizationComponent} from './create-organization/create-organization.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {OrganizationSettingsComponent} from './organization-settings/organization-settings.component';
-import {AddConfigShiftDialogComponent} from './add-config-shift-dialog/add-config-shift-dialog.component';
 
 
 @NgModule({
@@ -22,7 +21,6 @@ import {AddConfigShiftDialogComponent} from './add-config-shift-dialog/add-confi
     RoleChooseDialogComponent,
     CreateOrganizationComponent,
     OrganizationSettingsComponent,
-    AddConfigShiftDialogComponent
   ],
   imports: [
     CommonModule,

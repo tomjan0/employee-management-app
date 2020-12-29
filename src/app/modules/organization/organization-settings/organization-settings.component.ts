@@ -4,7 +4,7 @@ import {DataService} from '../../../core/services/data.service';
 import firebase from 'firebase';
 import {Subject} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {AddConfigShiftDialogComponent} from '../add-config-shift-dialog/add-config-shift-dialog.component';
+import {AddConfigShiftDialogComponent} from '../../../shared/dialogs/add-config-shift-dialog/add-config-shift-dialog.component';
 import {DayShort} from '../../../core/types/custom.types';
 import {SnackService} from '../../../core/services/snack.service';
 import {takeUntil} from 'rxjs/operators';

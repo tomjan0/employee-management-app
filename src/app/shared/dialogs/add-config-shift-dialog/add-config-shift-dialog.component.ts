@@ -65,7 +65,7 @@ export class AddConfigShiftDialogComponent implements OnInit {
   shiftEndValidatorFactory(start: FormControl, end: FormControl): ValidatorFn {
     return (): any => {
       if (end.value <= start.value) {
-        end.setErrors({wrongEnd: start.value});
+        end.setErrors({shiftEnd: start.value});
       } else {
         end.setErrors(null);
       }
@@ -78,11 +78,6 @@ export class AddConfigShiftDialogComponent implements OnInit {
 
   getControl(name: string): FormControl {
     return this.shiftForm.controls[name] as FormControl;
-  }
-
-  signIn(): void {
-    console.log('submit');
-    console.log(this.shiftForm.value);
   }
 
 }
