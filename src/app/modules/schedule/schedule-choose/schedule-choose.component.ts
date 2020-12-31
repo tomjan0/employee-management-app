@@ -1,42 +1,39 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ScheduleService} from '../services/schedule.service';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-import {ActivatedRoute} from '@angular/router';
+import {SnackService} from '../../../core/services/snack.service';
+import {SimpleStatus} from '../../../core/types/custom.types';
 
 @Component({
   selector: 'app-schedule-choose',
   templateUrl: './schedule-choose.component.html',
   styleUrls: ['./schedule-choose.component.scss']
 })
-export class ScheduleChooseComponent implements OnInit, OnDestroy {
-  private readonly ngUnsubscribe = new Subject<boolean>();
-  month?: number;
-  year?: number;
+export class ScheduleChooseComponent implements OnInit {
+  status: SimpleStatus = 'not-started';
 
-  constructor(private scheduleService: ScheduleService, private route: ActivatedRoute) {
-    this.route.params
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(params => {
-        this.month = params.month;
-        this.year = params.year;
-      });
+  constructor(private scheduleService: ScheduleService,
+              private snackService: SnackService) {
   }
 
 
   ngOnInit(): void {
   }
 
-  ngOnDestroy(): void {
-    this.ngUnsubscribe.next(true);
-    this.ngUnsubscribe.complete();
-  }
-
   get schedules(): string[] {
     return this.scheduleService.schedules;
   }
 
-  click(): void {
-    console.log('click');
+  async removeSchedule(scheduleTitle: string): Promise<void> {
+    this.status = 'in-progress';
+    try {
+      await this.scheduleService.removeSchedule(scheduleTitle);
+      this.snackService.successSnack('Usunięto grafik');
+    } catch (e) {
+      console.log(e);
+      this.snackService.errorSnack();
+    } finally {
+       this.status = 'in-progress';
+    }
   }
+
 }

@@ -1,6 +1,308 @@
+@import "src/styles/variables";
+
 :host {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
   padding: 1em;
+  overflow-x: auto;
 }
+
+h2 {
+  text-transform: capitalize;
+}
+
+.table-container {
+  display: flex;
+  flex-grow: 1;
+  overflow: auto;
+
+  .mat-table {
+    background-color: transparent;
+  }
+
+  .username-cell {
+    overflow: visible;
+    font-size: 1.1em;
+    font-weight: 500;
+    text-align: center;
+
+    .username {
+      border-radius: 999px;
+      font-weight: 500;
+      padding: .5em 1em;
+      text-align: center;
+
+      &.owner {
+        background-color: $red-200;
+        color: $red-500;
+      }
+
+      &.manager {
+        background-color: $blue-200;
+        color: $blue-500;
+      }
+
+      &.member {
+        background-color: $green-200;
+        color: $green-500;
+      }
+    }
+
+    .user-hours {
+      font-size: .75em;
+      color: $gray-500;
+
+      span {
+        color: black;
+      }
+    }
+  }
+
+  .mat-table-sticky {
+    background-color: $gray-100;
+    box-shadow: $shadow-md;
+  }
+
+  .mat-cell, .mat-header-cell {
+    border-bottom-width: 2px;
+    padding: .75em;
+
+    &:not(:last-child) {
+      border-right: 2px solid $gray-300;
+    }
+  }
+
+  .header-date {
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.1em;
+    box-shadow: $shadow-md;
+    white-space: nowrap;
+
+    &:not(:first-child) {
+      color: $green-500;
+      min-width: 9em;
+
+      &.saturday {
+        color: $yellow-500;
+      }
+
+      &.sunday {
+        color: $red-500;
+      }
+    }
+  }
+
+  .availability-time {
+    opacity: 1;
+
+    &:not(:last-child) {
+      margin-bottom: .25em;
+    }
+  }
+
+
+}
+
+.availability-time {
+  opacity: .5;
+  background-color: white;
+  box-shadow: $shadow-md;
+  border-radius: 6px;
+  line-height: 3em;
+  flex-grow: 1;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  cursor: move;
+
+
+  &.preferred {
+    background-color: $yellow-500;
+  }
+}
+
+.header {
+
+  .availability-time {
+    border: 2px dashed;
+    background: transparent;
+    box-shadow: none;
+
+
+  }
+
+  .placeholder {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+
+  }
+}
+
+
+.stats {
+  border-radius: $radius;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: .5em;
+  font-weight: 500;
+
+
+  &:not(:last-child) {
+    margin-bottom: 1em;
+  }
+
+  .stat-header {
+    flex-grow: 1;
+    text-align: center;
+    white-space: nowrap;
+
+    .stat-name {
+      border-bottom: 2px solid $gray-200;
+    }
+
+    .stat-time {
+      color: $gray-500;
+    }
+  }
+
+  .stat-content {
+    margin-top: .5em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .stat-count {
+      //margin-left: 1em;
+      padding: .5em 1em;
+      color: white;
+      border-radius: $radius;
+      box-shadow: $shadow-md;
+
+      &.valid {
+        background-color: $green-400;
+      }
+
+      &.invalid {
+        background-color: $red-400;
+      }
+
+      &.warning {
+        color: $gray-600;
+        background-color: $yellow-400;
+      }
+    }
+
+    .stat-max {
+      font-size: .75em;
+      color: $gray-500;
+    }
+
+  }
+}
+
+.centered-tab {
+  margin: auto;
+  max-width: 800px;
+  margin-top: 2em;
+
+
+}
+
+.config-shift-day {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  border: 2px solid $green-200;
+  border-radius: 6px;
+  margin-bottom: 2em;
+  padding: 2em;
+  box-shadow: $shadow-md;
+  overflow: auto;
+
+  &.sat {
+    border-color: $yellow-200;
+  }
+
+  &.sun {
+    border-color: $red-200;
+  }
+
+  .day-title {
+    text-transform: capitalize;
+    font-weight: 500;
+    border-bottom: 2px solid $gray-200;
+    //font-size: 1.25em;
+  }
+
+  mat-table, .mat-table {
+    background-color: transparent;
+  }
+
+  .mat-column-start, .mat-column-end {
+    font-weight: 500;
+  }
+
+  .shift-control-button {
+    margin-top: 1em;
+  }
+
+  .delete-btn {
+    //color: $red-400;
+  }
+
+  .buttons {
+    display: flex;
+    flex-flow: row wrap;
+    //justify-content: center;
+
+    button {
+      display: flex;
+      align-items: center;
+
+      mat-icon {
+        margin-right: .25em;
+      }
+    }
+  }
+}
+
+.add-exception-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  button {
+    margin-top: .25em;
+    margin-bottom: 2em;
+  }
+}
+
+@media screen and (min-width: 800px) {
+  .stats {
+    flex-direction: row;
+
+    .stat-content {
+      margin-top: 0;
+      margin-left: 1em;
+    }
+  }
+
+  .table-container {
+
+    .username-cell {
+      white-space: nowrap;
+
+    }
+  }
+}
+
+
+
+
+

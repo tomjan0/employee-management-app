@@ -2,10 +2,12 @@ import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import ConfigModel, {ConfigExceptionShift, ConfigShiftDialogModel, ConfigShiftModel} from '../../../models/config.model';
 import {DayShortNames} from '../../../core/enums/config.enums';
-import {DayShort} from '../../../core/types/custom.types';
+import {DayShort, SimpleStatus} from '../../../core/types/custom.types';
 import {AddConfigShiftDialogComponent} from '../../../shared/dialogs/add-config-shift-dialog/add-config-shift-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {ScheduleService} from '../services/schedule.service';
+import {SnackService} from '../../../core/services/snack.service';
+import {Router} from '@angular/router';
 
 
 @Component({
@@ -14,18 +16,21 @@ import {ScheduleService} from '../services/schedule.service';
   styleUrls: ['./schedule-new.component.scss'],
 })
 export class ScheduleNewComponent implements OnInit {
-  today = new Date();
+  private today = new Date();
+  private config?: ConfigModel;
   month = new FormControl('', [Validators.required]);
   year = new FormControl(this.currentYear, [Validators.required]);
   exceptionDate = new FormControl('');
   exceptionForm = new FormGroup({exceptionDate: this.exceptionDate});
   exceptions: ConfigExceptionShift[] = [];
-  config?: ConfigModel;
+  status: SimpleStatus = 'not-started';
 
 
   constructor(
     private matDialog: MatDialog,
-    private scheduleService: ScheduleService) {
+    private scheduleService: ScheduleService,
+    private snackService: SnackService,
+    private router: Router) {
   }
 
   ngOnInit(): void {
@@ -33,7 +38,7 @@ export class ScheduleNewComponent implements OnInit {
   }
 
   async loadData(): Promise<void> {
-    this.config = await this.scheduleService.getDefaultConfigOnce();
+    this.config = await this.scheduleService.getDefaultConfig();
   }
 
   get monthOptions(): number[] {
@@ -137,7 +142,16 @@ export class ScheduleNewComponent implements OnInit {
 
   async save(): Promise<void> {
     if (this.config) {
-      await this.scheduleService.createNewSchedule(this.month.value, this.year.value, this.config, this.exceptions);
+      this.status = 'in-progress';
+      try {
+        await this.scheduleService.createNewSchedule(this.month.value, this.year.value, this.config, this.exceptions);
+        this.snackService.successSnack('Pomyślnie utworzono grafik');
+        this.router.navigateByUrl('/schedule/edit');
+      } catch (e) {
+        this.snackService.errorSnack();
+      } finally {
+        this.status = 'not-started';
+      }
     }
   }
 }

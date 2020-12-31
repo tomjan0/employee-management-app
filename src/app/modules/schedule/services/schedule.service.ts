@@ -1,7 +1,20 @@
 import {Injectable} from '@angular/core';
 import {DataService} from '../../../core/services/data.service';
-import {AngularFirestore} from '@angular/fire/firestore';
-import ConfigModel, {ConfigExceptionShift} from '../../../models/config.model';
+import {AngularFirestore, AngularFirestoreDocument} from '@angular/fire/firestore';
+import ConfigModel, {
+  ConfigExceptionShift,
+  ConfigShiftModel,
+  ConfigWithExceptionsModel,
+  PeriodicConfigShiftModel
+} from '../../../models/config.model';
+import {Subscription} from 'rxjs';
+import {UserScheduledShifts} from '../../../models/schedule.model';
+import {getDaysCount} from '../../../core/utils/utils';
+import firebase from 'firebase';
+import {DayShortNames} from '../../../core/enums/config.enums';
+import {DayShort} from '../../../core/types/custom.types';
+import {formatDate} from '@angular/common';
+import Timestamp = firebase.firestore.Timestamp;
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +22,15 @@ import ConfigModel, {ConfigExceptionShift} from '../../../models/config.model';
 export class ScheduleService {
   firestore: AngularFirestore;
   schedules: string[] = [];
+  private schedulesDoc?: AngularFirestoreDocument<{ schedules: string[] }>;
+  private currentScheduleSubscription?: Subscription;
+  public schedule: UserScheduledShifts[] = [];
+  public possibleShifts: PeriodicConfigShiftModel[][] = [];
+  userStats = new Map<string, number>();
+  config: ConfigWithExceptionsModel = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
+  year = 0;
+  month = 0;
+
 
   constructor(private dataService: DataService) {
     this.firestore = this.dataService.getFirestore();
@@ -19,23 +41,152 @@ export class ScheduleService {
   async loadSchedules(): Promise<void> {
     await this.dataService.waitForOrganizationData();
     if (this.dataService.organizationData) {
-      this.firestore.collection('schedules').doc<{ schedules: string [] }>(this.dataService.organizationData.id).valueChanges().subscribe(next => {
-        this.schedules = next?.schedules || [];
+      this.schedulesDoc = this.firestore.collection('schedules').doc<{ schedules: string [] }>(this.dataService.organizationData.id);
+      this.schedulesDoc.valueChanges().subscribe(next => {
+        this.schedules = next?.schedules.sort(this.compareScheduleTitles) || [];
       });
     }
   }
 
+  compareScheduleTitles(a: string, b: string): number {
+    const aSplit = a.split('-');
+    const bSplit = b.split('-');
+    const aNum = Number(aSplit[1] + aSplit[0].padStart(2, '0'));
+    const bNum = Number(bSplit[1] + bSplit[0].padStart(2, '0'));
+    return bNum - aNum;
+  }
 
   async createNewSchedule(month: number, year: number, config: ConfigModel, exceptions: ConfigExceptionShift[]): Promise<void> {
-    console.log(month, year, config, exceptions);
     if (this.dataService.organizationData) {
       const schedulesDoc = this.firestore.collection('schedules').doc(this.dataService.organizationData.id);
-      await schedulesDoc.update({schedules: this.dataService.utils.FieldValue.arrayUnion(`${month}-${year}`)});
-      await schedulesDoc.collection(`${month}-${year}`).doc('config').set({...config, exceptions});
+      const batch = this.firestore.firestore.batch();
+      batch.update(schedulesDoc.ref, {schedules: this.dataService.utils.FieldValue.arrayUnion(`${month}-${year}`)});
+      batch.set(schedulesDoc.collection(`${month}-${year}`).doc('config').ref, {...config, exceptions});
+      await batch.commit();
     }
   }
 
-  getDefaultConfigOnce(): Promise<ConfigModel> {
-    return this.dataService.getDefaultConfigOnce();
+  async removeSchedule(scheduleTitle: string): Promise<void> {
+    if (this.dataService.organizationData) {
+      const batch = this.firestore.firestore.batch();
+      const schedulesDoc = this.firestore.collection('schedules').doc(this.dataService.organizationData.id);
+      const scheduleCollection = schedulesDoc.collection(scheduleTitle);
+      batch.delete(scheduleCollection.doc('config').ref);
+      batch.delete(scheduleCollection.doc('working').ref);
+      batch.delete(scheduleCollection.doc('public').ref);
+      batch.update(schedulesDoc.ref, {schedules: this.dataService.utils.FieldValue.arrayRemove(scheduleTitle)});
+      await batch.commit();
+    }
+  }
+
+  async getDefaultConfig(): Promise<ConfigModel> {
+    return await this.dataService.getDefaultConfigOnce();
+  }
+
+  async subscribeToSchedule(month: number, year: number): Promise<void> {
+    await this.dataService.waitForOrganizationData();
+    this.currentScheduleSubscription?.unsubscribe();
+    const scheduleCollection = await this.schedulesDoc?.collection(`${month + 1}-${year}`).get().toPromise();
+    if (scheduleCollection?.empty) {
+      console.log('empty');
+      throw new Error('schedule-does-not-exist');
+    } else {
+      this.prepareEmptySchedule(month as number, year as number);
+      this.currentScheduleSubscription = this.schedulesDoc?.collection(`${month + 1}-${year}`)
+        .doc<ConfigWithExceptionsModel>('config').valueChanges().subscribe(next => {
+          if (next) {
+            for (let i = 0; i < 7; i++) {
+              const shifts = next[DayShortNames[i] as DayShort];
+              for (const shift of (shifts as ConfigShiftModel[])) {
+                shift.start = (shift.start as unknown as Timestamp).toDate();
+                shift.end = (shift.end as unknown as Timestamp).toDate();
+              }
+            }
+            for (const exception of next.exceptions) {
+              exception.date = (exception.date as unknown as Timestamp).toDate();
+              const shifts = exception.shifts;
+              for (const shift of (shifts as ConfigShiftModel[])) {
+                shift.start = (shift.start as unknown as Timestamp).toDate();
+                shift.end = (shift.end as unknown as Timestamp).toDate();
+              }
+            }
+          }
+          this.config = next || {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
+          this.year = year;
+          this.month = month;
+          this.loadPossibleShifts(month, year);
+          this.refreshStats();
+        });
+    }
+  }
+
+  loadPossibleShifts(month: number = this.month, year: number = this.year): void {
+    const date = new Date();
+    date.setFullYear(year);
+    date.setMonth(month);
+    const dayCount = getDaysCount(year, month);
+
+    for (let i = 0; i < dayCount; i++) {
+      date.setDate(i + 1);
+      const exception = this.config.exceptions.find(e => e.date.getDate() === i + 1);
+      const shifts = exception ? exception.shifts : this.config[DayShortNames[date.getDay()] as DayShort];
+      this.possibleShifts[i] = shifts.map(s => {
+        return {
+          start: formatDate(s.start, 'H:mm', 'pl'),
+          end: formatDate(s.end, 'H:mm', 'pl'),
+          minEmployees: s.minEmployees,
+          maxEmployees: s.maxEmployees,
+          name: s.name,
+          counter: 0
+        };
+      });
+    }
+    this.calculateShiftStats();
+  }
+
+  prepareEmptySchedule(month: number, year: number): void {
+    const members = this.dataService.mergedMembersInfo;
+    const dayCount = getDaysCount(year, month);
+    this.schedule = members.map(member => {
+      return {assignee: member, shifts: Array.from(Array(dayCount).keys()).map(() => [])};
+    });
+    this.possibleShifts = Array.from(Array(dayCount).keys()).map(() => []);
+    this.schedule[0].shifts[1] = [{start: '7:00', end: '15:00'}, {end: '22:00', start: '15:00'}];
+  }
+
+  refreshStats(): void {
+    this.calculateShiftStats();
+    this.calculateUserStats();
+  }
+
+  calculateShiftStats(): void {
+    for (let i = 0; i < this.possibleShifts.length; i++) {
+      for (const posShift of this.possibleShifts[i]) {
+        posShift.counter = 0;
+      }
+      for (const userEntry of this.schedule) { // check every user
+        for (const shift of userEntry.shifts[i]) { // check every assigned shift
+          for (const posShift of this.possibleShifts[i]) { // check against every possible shift
+            if (posShift.start === shift.start && posShift.end === shift.end) {
+              posShift.counter++;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  calculateUserStats(): void {
+    for (const userEntry of this.schedule) {
+      let hours = 0;
+      for (const shifts of userEntry.shifts) {
+        for (const shift of shifts) {
+          const s = shift.start.split(':');
+          const e = shift.end.split(':');
+          hours += Number(e[0]) + Number(e[1]) / 60 - ((Number(s[0]) + Number(s[1]) / 60));
+        }
+      }
+      this.userStats.set(userEntry.assignee.userId, Math.round(hours * 100) / 100);
+    }
   }
 }

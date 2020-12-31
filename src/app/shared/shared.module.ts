@@ -5,11 +5,12 @@ import {MaterialModule} from '../material.module';
 import {MatDialogModule} from '@angular/material/dialog';
 import {AddConfigShiftDialogComponent} from './dialogs/add-config-shift-dialog/add-config-shift-dialog.component';
 import {ReactiveFormsModule} from '@angular/forms';
+import { ConfigEditComponent } from './config-edit/config-edit.component';
 
 
 
 @NgModule({
-  declarations: [ConfirmDialogComponent, AddConfigShiftDialogComponent],
+  declarations: [ConfirmDialogComponent, AddConfigShiftDialogComponent, ConfigEditComponent],
   imports: [
     CommonModule,
     MaterialModule,

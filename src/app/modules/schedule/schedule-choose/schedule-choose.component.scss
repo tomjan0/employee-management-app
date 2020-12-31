@@ -2,41 +2,63 @@
 
 :host {
   display: flex;
-  //flex-grow: 1;
+  flex-grow: 1;
   flex-direction: column;
-  padding: 1em;
+  padding: 2em;
 }
 
 .cards {
   display: flex;
-  flex-grow: 1;
+  //flex-grow: 1;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: center;
 
-  .card {
-    border-radius: 6px;
-    padding: 2em;
-    font-size: 1.25em;
-    font-weight: 500;
-    border: 2px solid $gray-300;
-    box-shadow: $shadow-md;
-    margin-right: 1em;
+  .card-container {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform .1s;
+    flex-direction: column;
+    margin-right: 1em;
+    margin-bottom: 1em;
 
-    &:first-child {
-      border: 2px dashed $gray-500;
-      background-color: transparent;
-      box-shadow: none;
+
+    .card {
+      color: unset;
+      border-radius: 6px;
+      padding: 2em;
+      font-size: 1.25em;
+      font-weight: 500;
+      border: 2px solid $gray-300;
+      box-shadow: $shadow-md;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform .1s;
+
+      &.dashed {
+        flex-grow: 1;
+        border: 2px dashed $gray-500;
+        background-color: transparent;
+        box-shadow: none;
+
+        mat-icon {
+          width: fit-content;
+          height: fit-content;
+          font-size: 1.2em;
+        }
+      }
+
+      &:hover, &:focus {
+        outline: none;
+        text-decoration: none;
+        transform: scale(1.15);
+      }
     }
 
-    &:hover, &:focus {
-      outline: none;
-      transform: scale(1.2);
+    button {
+      margin-top: 1em;
     }
-
   }
+
 }

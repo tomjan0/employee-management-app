@@ -64,6 +64,8 @@ export class AvailabilityViewComponent implements OnInit, OnDestroy {
 
     const data = await this.loadAvailabilities(month, year, dayCount);
     this.data = [data];
+    this.displayedColumns = ['name', ...Array.from(Array(dayCount).keys()).map(i => `day${i}`)];
+
 
     const role = this.dataService.currentUserMemberInfo?.role;
     if ((role === 'owner' || role === 'manager') && this.dataService.organizationData) {
@@ -82,8 +84,6 @@ export class AvailabilityViewComponent implements OnInit, OnDestroy {
       tmp.setDate(day + 1);
       return {date: tmp, periods: [], preferredPeriods: []};
     }));
-
-    this.displayedColumns = ['name', ...Array.from(Array(dayCount).keys()).map(i => `day${i}`)];
 
     const availabilities = await this.dataService.getAvailabilitiesDataOnce(month, year, uid);
     for (const pos of availabilities.positions) {

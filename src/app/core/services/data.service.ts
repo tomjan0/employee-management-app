@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument} from '@angular/fire/firestore';
 import UserDataModel from '../../models/user-data.model';
-import {MemberDataModel, OrganizationDataModel} from '../../models/organization-data.model';
+import {MemberDataModel, MergedMemberDataModel, OrganizationDataModel} from '../../models/organization-data.model';
 import {Observable, Subject} from 'rxjs';
 import {AvailabilitiesDataModel, AvailabilityPeriod} from '../../models/availabilities-data.model';
 import {takeUntil} from 'rxjs/operators';
@@ -84,9 +84,9 @@ export class DataService {
     if (this.userData && this.userData.organizations[organizationIndex]) {
       // subscribe to given organization data
       this.organizationDataDoc = this.firestore.collection('organizations').doc(this.userData.organizations[organizationIndex]);
-      this.organizationDataDoc.valueChanges({idField: 'id'}).pipe(takeUntil(this.organizationUnsubscribe)).subscribe(orgData => {
+      this.organizationDataDoc.valueChanges({idField: 'id'}).pipe(takeUntil(this.organizationUnsubscribe)).subscribe(async orgData => {
         orgData?.members.sort((a) => a.userId === this.userData?.id ? -1 : 0);
-        this.loadAdditionalOrganizationData(this.organizationData, orgData);
+        await this.loadAdditionalOrganizationData(this.organizationData, orgData);
         this.organizationData = orgData as OrganizationDataModel;
         this.organizationDataReady.next(true);
         this.organizationDataReady.complete();
@@ -165,6 +165,17 @@ export class DataService {
 
   get currentUserMemberInfo(): MemberDataModel | undefined {
     return this.organizationData?.members.find(member => member.userId === this.userData?.id);
+  }
+
+  get mergedMembersInfo(): MergedMemberDataModel[] {
+    const res: MergedMemberDataModel[] = [];
+    if (this.organizationData && this.additionalOrganizationData) {
+      for (let i = 0; i < this.organizationData.members.length; i++){
+        const member = this.organizationData.members[i];
+        res.push({...member, username: this.additionalOrganizationData.membersUsernames[i]});
+      }
+    }
+    return res;
   }
 
 
