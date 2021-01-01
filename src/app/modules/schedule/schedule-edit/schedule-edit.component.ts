@@ -267,7 +267,34 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
   }
 
   removeException(exception: ConfigExceptionShift): void {
-      this.config.exceptions = this.config.exceptions.filter(e => e !== exception);
-      this.scheduleService.loadPossibleShifts();
+    this.config.exceptions = this.config.exceptions.filter(e => e !== exception);
+    this.scheduleService.loadPossibleShifts();
+  }
+
+  calcClasses(shift: AvailabilityPeriod, idx: number): void {
+    for (const {helper, assignee} of this.scheduleService.schedule) {
+      const avb = assignee.availabilities[idx];
+      helper.availabilityClasses[idx] = this.checkAvailabilityAgainstShift(shift, avb.periods, avb.preferredPeriods);
+    }
+  }
+
+  checkAvailabilityAgainstShift(shift: AvailabilityPeriod, periods: AvailabilityPeriod[], preferredPeriods: AvailabilityPeriod[]): string {
+    for (const period of periods) {
+      if (shift.start >= period.start && shift.end <= period.end) {
+        for (const preferredPeriod of preferredPeriods) {
+          if (shift.start >= preferredPeriod.start && shift.end <= preferredPeriod.end) {
+            return 'preferred';
+          }
+        }
+        return 'available';
+      }
+    }
+    return 'not-available';
+  }
+
+  clearClasses(idx: number): void {
+    for (const {helper} of this.scheduleService.schedule) {
+      helper.availabilityClasses[idx] = '';
+    }
   }
 }

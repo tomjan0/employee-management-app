@@ -14,7 +14,7 @@
             <div class="username"
                  [ngClass]="element.assignee.role">{{hideNames ? getInitials(element.assignee.username) : element.assignee.username}}</div>
             <div class="user-hours">{{hideNames ? '' : 'Godziny:'}}
-              <span>{{this.scheduleService.userStats.get(element.assignee.userId)}}</span></div>
+              <span>{{element.assignee.hours}}</span></div>
           </td>
           <td class="username-cell" mat-cell *matFooterCellDef>
             <div class="username">{{hideNames ? 'S' : 'Statystyki'}}</div>
@@ -30,7 +30,7 @@
         <ng-container *ngFor="let date of headerDates; index as i" [matColumnDef]="'pos-shifts-day-' + i">
           <td class="header" mat-cell cdkDropList [cdkDropListData]="{shifts: undefined, id: i}"
               (cdkDropListDropped)="drop($event)" *matHeaderCellDef>
-            <div cdkDragLockAxis="y" cdkDrag *ngFor="let shift of possibleShifts[i]"
+            <div cdkDragLockAxis="y" cdkDrag (cdkDragStarted)="calcClasses(shift, i)" (cdkDragEnded)="clearClasses(i)" *ngFor="let shift of possibleShifts[i]"
                  class="availability-time"> {{shift.start}}
               - {{shift.end}}
             </div>
@@ -40,9 +40,10 @@
         <ng-container *ngFor="let date of headerDates; index as i" [matColumnDef]="'day-' + i">
           <th mat-header-cell class="header-date" *matHeaderCellDef [class.saturday]="date.getDay() === 6"
               [class.sunday]="date.getDay() === 0"> {{date | date:'EEE d.MM'}}</th>
-          <td mat-cell *matCellDef="let element" cdkDropList [cdkDropListData]="{shifts: element.shifts, id: i}"
-              (cdkDropListDropped)="drop($event)">
-            <div cdkDragLockAxis="y" cdkDrag *ngFor="let shift of element.shifts[i]"
+          <td (cdkDropListDropped)="drop($event)" *matCellDef="let element" [cdkDropListData]="{shifts: element.shifts, id: i}"
+              class="highlightable-cell" [ngClass]="element.helper.availabilityClasses[i]" cdkDropList
+              mat-cell>
+            <div cdkDragLockAxis="y" cdkDrag (cdkDragStarted)="calcClasses(shift, i)" (cdkDragEnded)="clearClasses(i)" *ngFor="let shift of element.shifts[i]"
                  class="availability-time">
               <div *cdkDragPlaceholder class="availability-time placeholder">
                 {{shift.start}} - {{shift.end}}

@@ -149,7 +149,7 @@ export class DataService {
   }
 
   async getAvailabilitiesDataOnce(month: number, year: number, uid = this.uid): Promise<AvailabilitiesDataModel> {
-    if (this.uid && this.organizationData) {
+    if (uid && this.organizationData) {
       const doc = this.firestore
         .collection('availabilities')
         .doc(this.organizationData.id)

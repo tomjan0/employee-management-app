@@ -1,5 +1,5 @@
 import {AvailabilityPeriod} from './availabilities-data.model';
-import {MergedMemberDataModel} from './organization-data.model';
+import {MemberDataModel} from './organization-data.model';
 
 export interface ScheduleData {
   scheduledShifts: ScheduleShift[][];
@@ -11,6 +11,18 @@ export interface ScheduleShift {
 }
 
 export interface UserScheduledShifts {
-  assignee: MergedMemberDataModel;
+  assignee: ScheduleMemberData;
   shifts: AvailabilityPeriod[][];
+  helper: {
+    availabilityClasses: string[];
+  };
+}
+
+export interface ScheduleMemberData extends MemberDataModel {
+  username: string;
+  availabilities: {
+    periods: AvailabilityPeriod[];
+    preferredPeriods: AvailabilityPeriod[];
+  }[];
+  hours: number;
 }

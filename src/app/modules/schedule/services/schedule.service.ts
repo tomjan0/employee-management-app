@@ -26,7 +26,6 @@ export class ScheduleService {
   private currentScheduleSubscription?: Subscription;
   public schedule: UserScheduledShifts[] = [];
   public possibleShifts: PeriodicConfigShiftModel[][] = [];
-  userStats = new Map<string, number>();
   config: ConfigWithExceptionsModel = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
   year = 0;
   month = 0;
@@ -91,7 +90,10 @@ export class ScheduleService {
       console.log('empty');
       throw new Error('schedule-does-not-exist');
     } else {
-      this.prepareEmptySchedule(month as number, year as number);
+      this.year = year;
+      this.month = month;
+      this.prepareEmptySchedule(month, year);
+      this.loadAvailabilities();
       this.currentScheduleSubscription = this.schedulesDoc?.collection(`${month + 1}-${year}`)
         .doc<ConfigWithExceptionsModel>('config').valueChanges().subscribe(next => {
           if (next) {
@@ -112,8 +114,6 @@ export class ScheduleService {
             }
           }
           this.config = next || {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
-          this.year = year;
-          this.month = month;
           this.loadPossibleShifts(month, year);
           this.refreshStats();
         });
@@ -144,13 +144,40 @@ export class ScheduleService {
     this.calculateShiftStats();
   }
 
+  async loadAvailabilities(): Promise<void> {
+    for (const userEntry of this.schedule) {
+      const availabilities = await this.dataService.getAvailabilitiesDataOnce(this.month, this.year, userEntry.assignee.userId);
+      for (const pos of availabilities.positions) {
+        const day = pos.timestamp.toDate().getDate();
+        userEntry.assignee.availabilities[day - 1].periods = pos.periods;
+      }
+      for (const pos of availabilities.preferredPositions) {
+        const day = pos.timestamp.toDate().getDate();
+        userEntry.assignee.availabilities[day - 1].preferredPeriods = pos.periods;
+      }
+    }
+  }
+
   prepareEmptySchedule(month: number, year: number): void {
     const members = this.dataService.mergedMembersInfo;
     const dayCount = getDaysCount(year, month);
+    const baseArray = Array.from(Array(dayCount).keys());
     this.schedule = members.map(member => {
-      return {assignee: member, shifts: Array.from(Array(dayCount).keys()).map(() => [])};
+      return {
+        assignee: {
+          ...member,
+          availabilities: baseArray.map(() => {
+            return {periods: [], preferredPeriods: []};
+          }),
+          hours: 0
+        },
+        helper: {
+          availabilityClasses: baseArray.map(() => '')
+        },
+        shifts: baseArray.map(() => [])
+      };
     });
-    this.possibleShifts = Array.from(Array(dayCount).keys()).map(() => []);
+    this.possibleShifts = baseArray.map(() => []);
     this.schedule[0].shifts[1] = [{start: '7:00', end: '15:00'}, {end: '22:00', start: '15:00'}];
   }
 
@@ -186,7 +213,7 @@ export class ScheduleService {
           hours += Number(e[0]) + Number(e[1]) / 60 - ((Number(s[0]) + Number(s[1]) / 60));
         }
       }
-      this.userStats.set(userEntry.assignee.userId, Math.round(hours * 100) / 100);
+      userEntry.assignee.hours = Math.round(hours * 100) / 100;
     }
   }
 }

@@ -302,6 +302,36 @@ h2 {
   }
 }
 
+.highlightable-cell {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    z-index: -1;
+    box-sizing: border-box;
+    border: 3px dashed transparent;
+    border-radius: 6px;
+  }
+
+  &.preferred::before {
+    border-color: $yellow-400;
+  }
+
+  &.available::before {
+    border-color: $green-400;
+  }
+
+  &.not-available::before {
+    border-color: $red-400;
+  }
+
+
+}
 
 
 
