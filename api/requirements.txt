@@ -1,0 +1,5 @@
+Flask==1.1.2
+requests==2.25.1
+ptvsd==4.3.2 # Required for debugging.
+ortools==8.1.8487
+flask_cors==3.0.9
