@@ -24,7 +24,7 @@
       <mat-icon>search</mat-icon>
       <span>Podgląd</span>
     </a>
-    <a mat-list-item routerLink="/schedule/edit" routerLinkActive="active" matRipple>
+    <a *ngIf="isCurrentUserOwnerOrManager" mat-list-item routerLink="/schedule/edit" routerLinkActive="active" matRipple>
       <mat-icon>edit</mat-icon>
       <span>Edycja</span>
     </a>
@@ -42,7 +42,7 @@
     <a mat-list-item disabled>
       <span>Organizacja</span>
     </a>
-    <a mat-list-item routerLink="/organization/manage-requests" routerLinkActive="active" matRipple>
+    <a *ngIf="isCurrentUserOwnerOrManager" mat-list-item routerLink="/organization/manage-requests" routerLinkActive="active" matRipple>
       <mat-icon>group_add</mat-icon>
       <span>Prośby o dołączenie</span>
     </a>
@@ -50,7 +50,7 @@
       <mat-icon>people</mat-icon>
       <span>Członkowie</span>
     </a>
-    <a mat-list-item routerLink="/organization/settings" routerLinkActive="active" matRipple>
+    <a *ngIf="isCurrentUserOwnerOrManager" mat-list-item routerLink="/organization/settings" routerLinkActive="active" matRipple>
       <mat-icon>settings</mat-icon>
       <span>Ustawienia</span>
     </a>
