@@ -51,7 +51,7 @@ def generate_schedule():
     min_shifts_per_employee = [0 for e in range_of_employees]
     max_shifts_per_employee = [999 for e in range_of_employees]
 
-    # Build avb and pref matrices with extra row for mock employee
+    # Build avb and pref matrices
     avb = availabilities
     pref = preferences
 
