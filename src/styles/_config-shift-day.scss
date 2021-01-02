@@ -1,0 +1,57 @@
+.config-shift-day {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  border: 2px solid $green-200;
+  border-radius: 6px;
+  margin-bottom: 2em;
+  padding: 2em;
+  box-shadow: $shadow-md;
+  overflow: auto;
+
+  &.sat {
+    border-color: $yellow-200;
+  }
+
+  &.sun {
+    border-color: $red-200;
+  }
+
+  .day-title {
+    text-transform: capitalize;
+    font-weight: 500;
+    border-bottom: 2px solid $gray-200;
+  }
+
+  .table-container {
+    display: flex;
+    flex-grow: 1;
+    overflow-x: auto;
+  }
+
+  mat-table, .mat-table {
+    background-color: transparent;
+  }
+
+  .mat-column-start, .mat-column-end {
+    font-weight: 500;
+  }
+
+  .shift-control-button {
+    margin-top: 1em;
+  }
+
+  .buttons {
+    display: flex;
+    flex-flow: row wrap;
+
+    button {
+      display: flex;
+      align-items: center;
+
+      mat-icon {
+        margin-right: .25em;
+      }
+    }
+  }
+}

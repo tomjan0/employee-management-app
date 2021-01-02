@@ -4,7 +4,7 @@ import {ScheduleService} from '../services/schedule.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {takeUntil} from 'rxjs/operators';
 import {SnackService} from '../../../core/services/snack.service';
-import {getDaysCount} from '../../../core/utils/utils';
+import {getDaysCount, getInitials} from '../../../core/utils/utils';
 import {MatTable} from '@angular/material/table';
 import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 import {AvailabilityPeriod} from '../../../models/availabilities-data.model';
@@ -15,11 +15,13 @@ import {
   ConfigWithExceptionsModel,
   PeriodicConfigShiftModel
 } from '../../../models/config.model';
-import {DayShort} from '../../../core/types/custom.types';
+import {DayShort, SimpleStatus} from '../../../core/types/custom.types';
 import {FormControl, FormGroup} from '@angular/forms';
 import {DayShortNames} from '../../../core/enums/config.enums';
 import {AddConfigShiftDialogComponent} from '../../../shared/dialogs/add-config-shift-dialog/add-config-shift-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
+import {ScheduleUserEntry} from '../../../models/schedule.model';
+import {AngularFireFunctions} from '@angular/fire/functions';
 
 @Component({
   selector: 'app-schedule-edit',
@@ -47,11 +49,14 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
   exceptionDateMin = new Date();
   exceptionDateMax = new Date();
 
+  status: SimpleStatus = 'in-progress';
+
   constructor(public scheduleService: ScheduleService,
               private route: ActivatedRoute,
               private snackService: SnackService,
               private router: Router,
-              private matDialog: MatDialog) {
+              private matDialog: MatDialog,
+              private functions: AngularFireFunctions) {
     const monday = new Date();
     monday.setDate(monday.getDate() + (7 - monday.getDate()) % 7);
     for (let i = 0; i < 7; i++) {
@@ -89,7 +94,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
   async loadSchedule(month: number, year: number): Promise<void> {
     try {
       await this.scheduleService.subscribeToSchedule(month, year);
-
+      this.calculateAllShiftClasses();
       const date = new Date();
       date.setMonth(month);
       date.setFullYear(year);
@@ -102,6 +107,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
         this.scheduleDisplayedColumns.push(`day-${i}`);
       }
       this.possibleShiftsDisplayedColumns = this.scheduleDisplayedColumns.map(c => 'pos-shifts-' + c);
+      this.status = 'not-started';
     } catch (e) {
       console.log(e);
       this.snackService.errorSnack('Błędny link');
@@ -115,32 +121,36 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
   }
 
   drop(event: CdkDragDrop<any>): void {
-    const curr = event.container.data as { shifts: AvailabilityPeriod[][], id: number };
+    const curr = event.container.data as { userEntry: ScheduleUserEntry, id: number };
     if (event.previousContainer !== event.container) {
-      const prev = event.previousContainer.data as { shifts: AvailabilityPeriod[][], id: number };
+      const prev = event.previousContainer.data as { userEntry: ScheduleUserEntry, id: number };
       if (prev.id === curr.id) {
         const id = prev.id;
-        if (prev.shifts && curr.shifts) {
-          transferArrayItem(prev.shifts[id], curr.shifts[id], event.previousIndex, event.currentIndex);
+        if (prev.userEntry && curr.userEntry) { // exchange between members
+          const shift = prev.userEntry.shifts[id][event.previousIndex];
+          transferArrayItem(prev.userEntry.shifts[id], curr.userEntry.shifts[id], event.previousIndex, event.currentIndex);
           this.scheduleService.calculateUserStats();
-        } else if (prev.shifts) {
-          prev.shifts[id].splice(event.previousIndex, 1);
+          this.calculateShiftClass(shift, curr.userEntry, curr.id);
+        } else if (prev.userEntry) { // drop to header
+          prev.userEntry.shifts[id].splice(event.previousIndex, 1);
           this.scheduleService.refreshStats();
-        } else if (curr.shifts) {
+        } else if (curr.userEntry) { // drop from header
           const cShift = this.possibleShifts[id][event.previousIndex];
-          curr.shifts[id].splice(event.currentIndex, 0, {start: cShift.start, end: cShift.end});
+          const shift = {start: cShift.start, end: cShift.end};
+          curr.userEntry.shifts[id].splice(event.currentIndex, 0, shift);
           this.scheduleService.refreshStats();
+          this.calculateShiftClass(shift, curr.userEntry, curr.id);
         }
       }
     } else {
-      if (curr.shifts) {
-        moveItemInArray(curr.shifts[curr.id], event.previousIndex, event.currentIndex);
+      if (curr.userEntry) {
+        moveItemInArray(curr.userEntry.shifts[curr.id], event.previousIndex, event.currentIndex);
       }
     }
   }
 
   getInitials(base: string): string {
-    return base.split(' ').map(s => s.slice(0, 1)).join('');
+    return getInitials(base);
   }
 
 
@@ -200,11 +210,6 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
     this.scheduleService.loadPossibleShifts();
   }
 
-  get copyInProgress(): boolean {
-    return false;
-  }
-
-
   calcExceptionDateMin(): void {
     const min = this.exceptionDateMin;
     min.setFullYear(this.year as number);
@@ -258,6 +263,34 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
     this.scheduleService.loadPossibleShifts();
   }
 
+  getShiftClass(shift: AvailabilityPeriod, userEntry: ScheduleUserEntry, idx: number): string {
+    return userEntry.helper.shiftsClasses[idx].get(shift.start + shift.end) || '';
+  }
+
+  private calculateAllShiftClasses(): void {
+    for (const userEntry of this.scheduleService.schedule) {
+      for (const [i, shifts] of userEntry.shifts.entries()) {
+        const avb = userEntry.assignee.availabilities[i];
+        const shiftClasses = userEntry.helper.shiftsClasses[i];
+        for (const shift of shifts) {
+          const key = shift.start + shift.end;
+          if (!shiftClasses.get(key)) {
+            shiftClasses.set(key, this.checkAvailabilityAgainstShift(shift, avb.periods, avb.preferredPeriods));
+          }
+        }
+      }
+    }
+  }
+
+  private calculateShiftClass(shift: AvailabilityPeriod, userEntry: ScheduleUserEntry, idx: number): void {
+    const shiftClasses = userEntry.helper.shiftsClasses[idx];
+    const key = shift.start + shift.end;
+    if (!shiftClasses.get(key)) {
+      const avb = userEntry.assignee.availabilities[idx];
+      shiftClasses.set(key, this.checkAvailabilityAgainstShift(shift, avb.periods, avb.preferredPeriods));
+    }
+  }
+
   async addExceptionShift(exception: ConfigExceptionShift): Promise<void> {
     const shift = await this.getShiftFromDialog();
     if (shift) {
@@ -271,18 +304,22 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
     this.scheduleService.loadPossibleShifts();
   }
 
-  calcClasses(shift: AvailabilityPeriod, idx: number): void {
+  calcAvailabilitiesClasses(shift: AvailabilityPeriod, idx: number): void {
     for (const {helper, assignee} of this.scheduleService.schedule) {
       const avb = assignee.availabilities[idx];
       helper.availabilityClasses[idx] = this.checkAvailabilityAgainstShift(shift, avb.periods, avb.preferredPeriods);
     }
   }
 
-  checkAvailabilityAgainstShift(shift: AvailabilityPeriod, periods: AvailabilityPeriod[], preferredPeriods: AvailabilityPeriod[]): string {
+  checkAvailabilityAgainstShift(shift: AvailabilityPeriod,
+                                periods: AvailabilityPeriod[],
+                                preferredPeriods: AvailabilityPeriod[]): 'preferred' | 'available' | 'not-available' {
+    const start = shift.start.padStart(5, '0');
+    const end = shift.end.padStart(5, '0');
     for (const period of periods) {
-      if (shift.start >= period.start && shift.end <= period.end) {
+      if (start >= period.start.padStart(5, '0') && end <= period.end.padStart(5, '0')) {
         for (const preferredPeriod of preferredPeriods) {
-          if (shift.start >= preferredPeriod.start && shift.end <= preferredPeriod.end) {
+          if (start >= preferredPeriod.start.padStart(5, '0') && end <= preferredPeriod.end.padStart(5, '0')) {
             return 'preferred';
           }
         }
@@ -292,9 +329,54 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
     return 'not-available';
   }
 
-  clearClasses(idx: number): void {
+  clearAvailabilitiesClasses(idx: number): void {
     for (const {helper} of this.scheduleService.schedule) {
       helper.availabilityClasses[idx] = '';
     }
   }
+
+  async generate(): Promise<void> {
+    const schedule = this.scheduleService.schedule;
+    const possibleShifts = this.scheduleService.possibleShifts;
+
+    const shiftsPerDay = possibleShifts.map(shifts => shifts.length);
+    const availabilities = [];
+    const preferences = [];
+    const minEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.minEmployees));
+    const maxEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.maxEmployees));
+
+    for (const userEntry of schedule) {
+      const userAvailabilities = [];
+      const userPreferences = [];
+      for (let i = 0; i < possibleShifts.length; i++) {
+        const avb = userEntry.assignee.availabilities[i];
+        const d = [];
+        const p = [];
+        for (const possibleShift of possibleShifts[i]) {
+          const check = this.checkAvailabilityAgainstShift(possibleShift, avb.periods, avb.preferredPeriods);
+          d.push(check === 'preferred' || check === 'available' ? 1 : 0);
+          p.push(check === 'preferred' ? 1 : 0);
+        }
+        userAvailabilities.push(d);
+        userPreferences.push(p);
+      }
+      availabilities.push(userAvailabilities);
+      preferences.push(userPreferences);
+    }
+
+
+  }
+
+  async save(publish = false): Promise<void> {
+    try {
+      this.status = 'in-progress';
+      await this.scheduleService.saveSchedule(publish);
+      this.snackService.successSnack(publish ? 'Opublikowano' : 'Zapisano');
+    } catch (e) {
+      this.snackService.errorSnack();
+    } finally {
+      this.status = 'not-started';
+    }
+  }
+
 }

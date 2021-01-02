@@ -11,10 +11,11 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {SharedModule} from '../../shared/shared.module';
 import {DragDropModule} from '@angular/cdk/drag-drop';
 import {MatTabsModule} from '@angular/material/tabs';
+import { ScheduleViewComponent } from './schedule-view/schedule-view.component';
 
 
 @NgModule({
-  declarations: [ScheduleEditComponent, ScheduleChooseComponent, ScheduleNewComponent],
+  declarations: [ScheduleEditComponent, ScheduleChooseComponent, ScheduleNewComponent, ScheduleViewComponent],
   imports: [
     CommonModule,
     ScheduleRoutingModule,

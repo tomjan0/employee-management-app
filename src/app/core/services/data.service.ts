@@ -67,7 +67,7 @@ export class DataService {
       // assign user data data
       const oldData = this.userData;
       this.userData = newData;
-      if (newData.organizations.length !== oldData?.organizations.length) {
+      if (newData.organizations?.length !== oldData?.organizations?.length) {
 
         if (this.organizationData?.id && !newData.organizations.includes(this.organizationData.id)) {
           this.resetOrganizationData();

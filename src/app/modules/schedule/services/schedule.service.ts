@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {DataService} from '../../../core/services/data.service';
-import {AngularFirestore, AngularFirestoreDocument} from '@angular/fire/firestore';
+import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument} from '@angular/fire/firestore';
 import ConfigModel, {
   ConfigExceptionShift,
   ConfigShiftModel,
@@ -8,7 +8,7 @@ import ConfigModel, {
   PeriodicConfigShiftModel
 } from '../../../models/config.model';
 import {Subscription} from 'rxjs';
-import {UserScheduledShifts} from '../../../models/schedule.model';
+import {SavedSchedule, ScheduleUserEntry} from '../../../models/schedule.model';
 import {getDaysCount} from '../../../core/utils/utils';
 import firebase from 'firebase';
 import {DayShortNames} from '../../../core/enums/config.enums';
@@ -23,8 +23,9 @@ export class ScheduleService {
   firestore: AngularFirestore;
   schedules: string[] = [];
   private schedulesDoc?: AngularFirestoreDocument<{ schedules: string[] }>;
+  private scheduleCollection?: AngularFirestoreCollection;
   private currentScheduleSubscription?: Subscription;
-  public schedule: UserScheduledShifts[] = [];
+  public schedule: ScheduleUserEntry[] = [];
   public possibleShifts: PeriodicConfigShiftModel[][] = [];
   config: ConfigWithExceptionsModel = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
   year = 0;
@@ -82,18 +83,20 @@ export class ScheduleService {
     return await this.dataService.getDefaultConfigOnce();
   }
 
-  async subscribeToSchedule(month: number, year: number): Promise<void> {
+  async subscribeToSchedule(month: number, year: number, pub = false): Promise<void> {
     await this.dataService.waitForOrganizationData();
     this.currentScheduleSubscription?.unsubscribe();
     const scheduleCollection = await this.schedulesDoc?.collection(`${month + 1}-${year}`).get().toPromise();
-    if (scheduleCollection?.empty) {
+    if (!scheduleCollection || scheduleCollection.empty) {
       console.log('empty');
       throw new Error('schedule-does-not-exist');
     } else {
+      this.scheduleCollection = this.schedulesDoc?.collection(`${month + 1}-${year}`);
       this.year = year;
       this.month = month;
       this.prepareEmptySchedule(month, year);
-      this.loadAvailabilities();
+      await this.loadAvailabilities();
+      await this.loadSchedule(pub);
       this.currentScheduleSubscription = this.schedulesDoc?.collection(`${month + 1}-${year}`)
         .doc<ConfigWithExceptionsModel>('config').valueChanges().subscribe(next => {
           if (next) {
@@ -119,6 +122,22 @@ export class ScheduleService {
         });
     }
   }
+
+  async loadSchedule(pub: boolean): Promise<void> {
+    const data = (await this.scheduleCollection?.doc<SavedSchedule>(pub ? 'public' : 'workingCopy').get().toPromise())?.data();
+    if (data) {
+      for (const entry of data.entries) {
+        const shifts = this.schedule.find(e => e.assignee.userId === entry.assignee)?.shifts;
+        if (shifts) {
+          for (const {dayNumber, periods} of entry.shifts) {
+            shifts[dayNumber] = periods;
+          }
+        }
+      }
+      this.refreshStats();
+    }
+  }
+
 
   loadPossibleShifts(month: number = this.month, year: number = this.year): void {
     const date = new Date();
@@ -172,13 +191,13 @@ export class ScheduleService {
           hours: 0
         },
         helper: {
-          availabilityClasses: baseArray.map(() => '')
+          availabilityClasses: baseArray.map(() => ''),
+          shiftsClasses: baseArray.map(() => new Map<string, string>())
         },
         shifts: baseArray.map(() => [])
       };
     });
     this.possibleShifts = baseArray.map(() => []);
-    this.schedule[0].shifts[1] = [{start: '7:00', end: '15:00'}, {end: '22:00', start: '15:00'}];
   }
 
   refreshStats(): void {
@@ -214,6 +233,25 @@ export class ScheduleService {
         }
       }
       userEntry.assignee.hours = Math.round(hours * 100) / 100;
+    }
+  }
+
+  async saveSchedule(publish = false): Promise<void> {
+    const data = [];
+    for (const userEntry of this.schedule) {
+      const shifts = [];
+      for (const [i, periods] of userEntry.shifts.entries()) {
+        if (periods.length > 0) {
+          shifts.push({dayNumber: i, periods});
+        }
+      }
+      if (shifts.length > 0) {
+        data.push({assignee: userEntry.assignee.userId, shifts});
+      }
+    }
+    await this.scheduleCollection?.doc<SavedSchedule>('workingCopy').set({entries: data});
+    if (publish) {
+      await this.scheduleCollection?.doc<SavedSchedule>('public').set({entries: data});
     }
   }
 }

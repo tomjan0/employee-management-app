@@ -1,18 +1,21 @@
 <h2>
   Wybierz grafik
 </h2>
-<div class="cards">
-  <div class="card-container">
+<ng-template #spinner>
+  <mat-spinner class="center-spinner"></mat-spinner>
+</ng-template>
+<div class="cards" *ngIf="status !== 'in-progress';else spinner">
+  <div *ngIf="mode === 'edit'" class="card-container">
     <a routerLink="new" class="card dashed">
       <mat-icon>add</mat-icon>
       Nowy
     </a>
   </div>
   <div class="card-container" *ngFor="let schedule of schedules">
-    <a class="card" [routerLink]="['/schedule/edit',schedule.split('-')[1], schedule.split('-')[0]]"
-    >{{schedule}}
+    <a class="card" [routerLink]="['/schedule', mode,schedule.split('-')[1], schedule.split('-')[0]]"
+    >{{getScheduleDate(schedule) | date:'LLLL y'}}
     </a>
-    <button mat-stroked-button (click)="removeSchedule(schedule)" color="warn">Usuń</button>
+    <button *ngIf="mode === 'edit'" mat-stroked-button (click)="removeSchedule(schedule)" color="warn">Usuń</button>
   </div>
 </div>
 
