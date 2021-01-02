@@ -21,7 +21,8 @@ import {DayShortNames} from '../../../core/enums/config.enums';
 import {AddConfigShiftDialogComponent} from '../../../shared/dialogs/add-config-shift-dialog/add-config-shift-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {ScheduleUserEntry} from '../../../models/schedule.model';
-import {AngularFireFunctions} from '@angular/fire/functions';
+import {ConfirmDialogComponent} from '../../../shared/dialogs/confirm-dialog/confirm-dialog.component';
+import {GenerateScheduleDialogComponent} from '../generate-schedule-dialog/generate-schedule-dialog.component';
 
 @Component({
   selector: 'app-schedule-edit',
@@ -55,13 +56,12 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
               private route: ActivatedRoute,
               private snackService: SnackService,
               private router: Router,
-              private matDialog: MatDialog,
-              private functions: AngularFireFunctions) {
+              private matDialog: MatDialog) {
     const monday = new Date();
-    monday.setDate(monday.getDate() + (7 - monday.getDate()) % 7);
+    monday.setDate(monday.getDate() + (7 - monday.getDay()) % 7);
     for (let i = 0; i < 7; i++) {
       const date = new Date();
-      date.setDate(monday.getDate() + i);
+      date.setDate(monday.getDate() + i + 1);
       this.daysNamesArray.push(date);
     }
   }
@@ -336,35 +336,70 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
   }
 
   async generate(): Promise<void> {
-    const schedule = this.scheduleService.schedule;
-    const possibleShifts = this.scheduleService.possibleShifts;
+    const dialogRef = this.matDialog.open(GenerateScheduleDialogComponent);
+    const options: {forceMinimum: boolean; allowUnavailable: boolean} = await dialogRef.afterClosed().toPromise();
+    console.log(options);
 
-    const shiftsPerDay = possibleShifts.map(shifts => shifts.length);
-    const availabilities = [];
-    const preferences = [];
-    const minEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.minEmployees));
-    const maxEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.maxEmployees));
+    if (options) {
+      const schedule = this.scheduleService.schedule;
+      const possibleShifts = this.scheduleService.possibleShifts;
 
-    for (const userEntry of schedule) {
-      const userAvailabilities = [];
-      const userPreferences = [];
-      for (let i = 0; i < possibleShifts.length; i++) {
-        const avb = userEntry.assignee.availabilities[i];
-        const d = [];
-        const p = [];
-        for (const possibleShift of possibleShifts[i]) {
-          const check = this.checkAvailabilityAgainstShift(possibleShift, avb.periods, avb.preferredPeriods);
-          d.push(check === 'preferred' || check === 'available' ? 1 : 0);
-          p.push(check === 'preferred' ? 1 : 0);
+      const shiftsPerDay = possibleShifts.map(shifts => shifts.length);
+      const availabilities = [];
+      const preferences = [];
+      const minEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.minEmployees));
+      const maxEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.maxEmployees));
+
+      for (const userEntry of schedule) {
+        const userAvailabilities = [];
+        const userPreferences = [];
+        for (let i = 0; i < possibleShifts.length; i++) {
+          const avb = userEntry.assignee.availabilities[i];
+          const d = [];
+          const p = [];
+          for (const possibleShift of possibleShifts[i]) {
+            const check = this.checkAvailabilityAgainstShift(possibleShift, avb.periods, avb.preferredPeriods);
+            d.push(check === 'preferred' || check === 'available' ? 1 : 0);
+            p.push(check === 'preferred' ? 1 : 0);
+          }
+          userAvailabilities.push(d);
+          userPreferences.push(p);
         }
-        userAvailabilities.push(d);
-        userPreferences.push(p);
+        availabilities.push(userAvailabilities);
+        preferences.push(userPreferences);
       }
-      availabilities.push(userAvailabilities);
-      preferences.push(userPreferences);
+
+      const data = {shiftsPerDay, availabilities, preferences, minEmployees, maxEmployees, forceMinimum: options.forceMinimum};
+      console.log(JSON.stringify(data));
+
+      try {
+        const response = await fetch('https://shift-scheduling-rest-api-welosfizjq-ey.a.run.app/api/schedule?data=' + JSON.stringify(data));
+        const res = await response.json();
+        console.log(data);
+        console.log(res);
+        if (res && res.results) {
+          const generatedSchedule = res.results as number[][][];
+          for (const [e, employee] of generatedSchedule.entries()) {
+            for (const [d, day] of employee.entries()) {
+              schedule[e].shifts[d] = [];
+              for (const [s, assigned] of day.entries()) {
+                if (assigned) {
+                  const {start, end} = possibleShifts[d][s];
+                  schedule[e].shifts[d].push({start, end});
+                }
+              }
+            }
+
+          }
+        }
+        this.calculateAllShiftClasses();
+        this.scheduleService.refreshStats();
+        this.snackService.successSnack('Wygenerowano grafik');
+      } catch (e) {
+        console.log(e);
+        this.snackService.errorSnack('Nie udało się wygenerować grafiku');
+      }
     }
-
-
   }
 
   async save(publish = false): Promise<void> {
@@ -379,4 +414,15 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
     }
   }
 
+  async clear(): Promise<void> {
+    const dialogRef = this.matDialog.open(ConfirmDialogComponent, {data: {message: 'Ta operacja spowoduje lokalne usunięcie całego grafiku. Kontynuować?'}});
+    const confirm: ConfigShiftDialogModel = await dialogRef.afterClosed().toPromise();
+
+    if (confirm) {
+      for (const userEntry of this.scheduleService.schedule) {
+        userEntry.shifts = userEntry.shifts.map(() => []);
+      }
+    }
+    this.scheduleService.refreshStats();
+  }
 }

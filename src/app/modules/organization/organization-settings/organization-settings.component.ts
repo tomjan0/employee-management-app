@@ -39,10 +39,10 @@ export class OrganizationSettingsComponent implements OnInit, OnDestroy {
               private snackService: SnackService,
               private matDialog: MatDialog) {
     const monday = new Date();
-    monday.setDate(monday.getDate() + (7 - monday.getDate()) % 7);
+    monday.setDate(monday.getDate() + (7 - monday.getDay()) % 7);
     for (let i = 0; i < 7; i++) {
       const date = new Date();
-      date.setDate(monday.getDate() + i);
+      date.setDate(monday.getDate() + i + 1);
       this.daysNamesArray.push(date);
     }
   }

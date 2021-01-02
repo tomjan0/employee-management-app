@@ -1,0 +1,31 @@
+@import "src/styles/variables";
+
+mat-checkbox {
+  font-weight: 500;
+}
+
+::ng-deep .mat-checkbox-layout {
+  white-space: normal !important;
+}
+
+.hint {
+  margin-left: 24px;
+  margin-bottom: .5em;
+  font-size: .9em;
+  opacity: .8;
+}
+
+.warning {
+  display: flex;
+  align-items: center;
+  color: $yellow-500;
+  font-size: .9em;
+
+  mat-icon {
+    font-size: 1.5em;
+    width: fit-content;
+    height: fit-content;
+    line-height: unset;
+    margin-right: .25em;
+  }
+}

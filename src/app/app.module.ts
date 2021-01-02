@@ -9,7 +9,7 @@ import {environment} from '../environments/environment';
 import {AngularFireAnalyticsModule} from '@angular/fire/analytics';
 import {AngularFireAuthModule} from '@angular/fire/auth';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
-import {AngularFireFunctionsModule} from '@angular/fire/functions';
+import {AngularFireFunctionsModule, REGION} from '@angular/fire/functions';
 import {MaterialModule} from './material.module';
 import {CoreModule} from './core/core.module';
 
@@ -29,7 +29,7 @@ import {CoreModule} from './core/core.module';
     MaterialModule,
     CoreModule
   ],
-  providers: [],
+  providers: [{provide: REGION, useValue: 'europe-west3'}],
   bootstrap: [AppComponent]
 })
 export class AppModule {

@@ -1,0 +1,18 @@
+<h2 mat-dialog-title>Generuj grafik</h2>
+<mat-dialog-content>
+  <mat-checkbox [formControl]="forceMinimum">Wymuś minimalną liczbę pracowników na zmianie</mat-checkbox>
+  <div class="hint">Generator spróbuje wymusić minimalną liczbę pracowników na zmianie. Może to doprowadzić do
+    przydzielenia zmiany niedostępnemu pracownikowi lub błędu, jeśli liczba pracowników jest mniejsza niż suma
+    wszystkich potrzebnych osób dla danego dnia.
+  </div>
+  <div class="warning">
+    <mat-icon>warning</mat-icon>
+    <div>Nizależnie od wybranych opcji, w przypadku powodzenia lokalny grafik zostanie nadpisany</div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-raised-button color="primary" type="submit" [mat-dialog-close]="{forceMinimum: forceMinimum.value}">
+    Generuj
+  </button>
+  <button color="warn" mat-stroked-button mat-dialog-close>Anuluj</button>
+</mat-dialog-actions>

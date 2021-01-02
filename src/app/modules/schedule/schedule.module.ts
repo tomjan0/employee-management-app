@@ -12,10 +12,12 @@ import {SharedModule} from '../../shared/shared.module';
 import {DragDropModule} from '@angular/cdk/drag-drop';
 import {MatTabsModule} from '@angular/material/tabs';
 import { ScheduleViewComponent } from './schedule-view/schedule-view.component';
+import { GenerateScheduleDialogComponent } from './generate-schedule-dialog/generate-schedule-dialog.component';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 
 
 @NgModule({
-  declarations: [ScheduleEditComponent, ScheduleChooseComponent, ScheduleNewComponent, ScheduleViewComponent],
+  declarations: [ScheduleEditComponent, ScheduleChooseComponent, ScheduleNewComponent, ScheduleViewComponent, GenerateScheduleDialogComponent],
   imports: [
     CommonModule,
     ScheduleRoutingModule,
@@ -25,7 +27,8 @@ import { ScheduleViewComponent } from './schedule-view/schedule-view.component';
     MatDialogModule,
     SharedModule,
     DragDropModule,
-    MatTabsModule
+    MatTabsModule,
+    MatCheckboxModule
   ]
 })
 export class ScheduleModule {
