@@ -135,6 +135,7 @@
   text-align: center;
   white-space: nowrap;
   cursor: move;
+  color: $gray-800;
 
   &.available {
     background-color: $green-400;
