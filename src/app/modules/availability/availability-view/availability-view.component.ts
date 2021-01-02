@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {DataService} from '../../../core/services/data.service';
 import {AvailabilityViewData, LocalAvailabilitiesPositionDataModel} from '../../../models/availabilities-data.model';
 import {MatTable} from '@angular/material/table';
+import {getInitials} from '../../../core/utils/utils';
 
 
 @Component({
@@ -99,4 +100,7 @@ export class AvailabilityViewComponent implements OnInit, OnDestroy {
     return {username: this.dataService.getMemberName(uid), role: info?.role || '', positions};
   }
 
+  getInitials(username: string): string {
+    return getInitials(username);
+  }
 }
