@@ -337,10 +337,10 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
 
   async generate(): Promise<void> {
     const dialogRef = this.matDialog.open(GenerateScheduleDialogComponent);
-    const options: {forceMinimum: boolean; allowUnavailable: boolean} = await dialogRef.afterClosed().toPromise();
-    console.log(options);
+    const options: { forceMinimum: boolean; allowUnavailable: boolean } = await dialogRef.afterClosed().toPromise();
 
     if (options) {
+      this.status = 'in-progress';
       const schedule = this.scheduleService.schedule;
       const possibleShifts = this.scheduleService.possibleShifts;
 
@@ -370,13 +370,10 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
       }
 
       const data = {shiftsPerDay, availabilities, preferences, minEmployees, maxEmployees, forceMinimum: options.forceMinimum};
-      console.log(JSON.stringify(data));
 
       try {
         const response = await fetch('https://shift-scheduling-rest-api-welosfizjq-ey.a.run.app/api/schedule?data=' + JSON.stringify(data));
         const res = await response.json();
-        console.log(data);
-        console.log(res);
         if (res && res.results) {
           const generatedSchedule = res.results as number[][][];
           for (const [e, employee] of generatedSchedule.entries()) {
@@ -398,6 +395,8 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
       } catch (e) {
         console.log(e);
         this.snackService.errorSnack('Nie udało się wygenerować grafiku');
+      } finally {
+        this.status = 'not-started';
       }
     }
   }

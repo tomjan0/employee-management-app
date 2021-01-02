@@ -1,5 +1,8 @@
 <h2>{{date | date:'LLLL y'}}</h2>
-<div class="table-container" *ngIf="scheduleService.schedule.length > 0">
+<ng-template #spinner>
+  <mat-spinner class="center-spinner"></mat-spinner>
+</ng-template>
+<div class="table-container" *ngIf="status !== 'in-progress' && scheduleService.schedule.length > 0; else spinner">
   <table mat-table [dataSource]="scheduleService.schedule" cdkDropListGroup>
     <ng-container matColumnDef="name" sticky>
       <th class="header-date" mat-header-cell *matHeaderCellDef>
