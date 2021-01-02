@@ -22,10 +22,12 @@
   .controls {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-evenly;
 
-    button:not(:last-child) {
-      margin-right: .5em;
+    button {
+      margin-top: .5em;
     }
+
   }
 }
 
@@ -283,6 +285,16 @@
 @media screen and (min-width: 800px) {
   .top-bar {
     flex-direction: row;
+
+    .controls {
+      button {
+        margin-top: 0;
+      }
+
+      button:not(:last-child) {
+        margin-right: .5em;
+      }
+    }
   }
 
   .stats {
