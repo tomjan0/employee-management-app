@@ -71,7 +71,6 @@ export class SignInComponent implements OnInit {
         this.status = this.processingStatuses.Succeeded;
         await this.router.navigateByUrl(this.redirect ? this.redirect : '/');
       } catch (authError) {
-        console.log(authError);
         switch (authError.code) {
           case 'auth/wrong-password': {
             this.password.setErrors({wrongPassword: true});

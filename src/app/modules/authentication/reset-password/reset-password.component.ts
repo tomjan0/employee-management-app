@@ -64,7 +64,6 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         this.snackService.successSnack('Link do zresetowania hasła został wysłany na podany adres email.');
         await this.router.navigate(['..', 'sign-in'], {relativeTo: this.route});
       } catch (authError) {
-        console.log(authError);
         switch (authError.code) {
           case 'auth/invalid-email': {
             this.email.setErrors({email: true});

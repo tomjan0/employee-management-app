@@ -88,7 +88,6 @@ export class ScheduleService {
     this.currentScheduleSubscription?.unsubscribe();
     const scheduleCollection = await this.schedulesDoc?.collection(`${month + 1}-${year}`).get().toPromise();
     if (!scheduleCollection || scheduleCollection.empty) {
-      console.log('empty');
       throw new Error('schedule-does-not-exist');
     } else {
       this.scheduleCollection = this.schedulesDoc?.collection(`${month + 1}-${year}`);

@@ -2,7 +2,6 @@ import {Component, OnInit} from '@angular/core';
 import {ScheduleService} from '../services/schedule.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {SnackService} from '../../../core/services/snack.service';
-import {MatDialog} from '@angular/material/dialog';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {getDaysCount, getInitials} from '../../../core/utils/utils';
@@ -75,7 +74,6 @@ export class ScheduleViewComponent implements OnInit {
       }
       this.status = 'not-started';
     } catch (e) {
-      console.log(e);
       this.snackService.errorSnack('Błędny link');
       this.router.navigateByUrl('/schedule/edit');
     }

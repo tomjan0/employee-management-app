@@ -49,7 +49,6 @@ export class ScheduleChooseComponent implements OnInit {
       await this.scheduleService.removeSchedule(scheduleTitle);
       this.snackService.successSnack('Usunięto grafik');
     } catch (e) {
-      console.log(e);
       this.snackService.errorSnack();
     } finally {
       this.status = 'in-progress';

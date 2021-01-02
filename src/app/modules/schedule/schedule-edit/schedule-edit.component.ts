@@ -109,7 +109,6 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
       this.possibleShiftsDisplayedColumns = this.scheduleDisplayedColumns.map(c => 'pos-shifts-' + c);
       this.status = 'not-started';
     } catch (e) {
-      console.log(e);
       this.snackService.errorSnack('Błędny link');
       this.router.navigateByUrl('/schedule/edit');
     }
@@ -393,7 +392,6 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
         this.scheduleService.refreshStats();
         this.snackService.successSnack('Wygenerowano grafik');
       } catch (e) {
-        console.log(e);
         this.snackService.errorSnack('Nie udało się wygenerować grafiku');
       } finally {
         this.status = 'not-started';

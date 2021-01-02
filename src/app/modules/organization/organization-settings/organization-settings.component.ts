@@ -104,7 +104,6 @@ export class OrganizationSettingsComponent implements OnInit, OnDestroy {
         await this.dataService.removeShift(day, shift);
         this.snackService.successSnack('Usunięto zmianę');
       } catch (e) {
-        console.log(e);
         this.snackService.errorSnack();
       }
     }
