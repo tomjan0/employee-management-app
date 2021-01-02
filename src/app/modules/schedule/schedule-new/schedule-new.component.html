@@ -103,13 +103,14 @@
             <mat-icon>add</mat-icon>
             <span>Dodaj</span>
           </button>
-          <button color="warn" class="shift-control-button" mat-button (click)="removeException(exception)">Usuń</button>
+          <button color="warn" class="shift-control-button" mat-button (click)="removeException(exception)">Usuń
+          </button>
         </div>
 
       </div>
       <div class="stepper-nav-buttons">
         <button mat-button matStepperPrevious color="warn">Wstecz</button>
-        <button mat-button (click)="save()" color="primary">Zapisz</button>
+        <button mat-button (click)="save()" [disabled]="status=== 'in-progress'" color="primary">Zapisz</button>
       </div>
     </div>
   </mat-step>

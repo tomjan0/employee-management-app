@@ -1,0 +1,63 @@
+<h2>{{date | date:'LLLL y'}}</h2>
+<ng-template #spinner>
+  <mat-spinner class="center-spinner"></mat-spinner>
+</ng-template>
+<div class="table-container" *ngIf="status !== 'in-progress' && scheduleService.schedule.length > 0; else spinner">
+  <table mat-table [dataSource]="scheduleService.schedule" cdkDropListGroup>
+    <ng-container matColumnDef="name" sticky>
+      <th class="header-date" mat-header-cell *matHeaderCellDef>
+        <button mat-icon-button (click)="hideNames = !hideNames">
+          <mat-icon>{{hideNames ? 'chevron_right' : 'chevron_left'}}</mat-icon>
+        </button>
+      </th>
+      <th mat-header-cell *matHeaderCellDef>Dostępne zmiany</th>
+      <td mat-cell class="username-cell" *matCellDef="let element;">
+        <div class="username"
+             [ngClass]="element.assignee.role">{{hideNames ? getInitials(element.assignee.username) : element.assignee.username}}</div>
+        <div class="user-hours">{{hideNames ? '' : 'Godziny:'}}
+          <span>{{element.assignee.hours}}</span></div>
+      </td>
+      <td class="username-cell" mat-cell *matFooterCellDef>
+        <div class="username">{{hideNames ? 'S' : 'Statystyki'}}</div>
+      </td>
+    </ng-container>
+
+    <ng-container [matColumnDef]="'pos-shifts-name'" sticky>
+      <td class="username-cell" mat-cell *matHeaderCellDef>
+        <div class="username">{{hideNames ? 'D' : 'Dostępne zmiany'}}</div>
+      </td>
+    </ng-container>
+
+    <ng-container *ngFor="let date of headerDates; index as i" [matColumnDef]="'day-' + i">
+      <th mat-header-cell class="header-date" *matHeaderCellDef [class.saturday]="date.getDay() === 6"
+          [class.sunday]="date.getDay() === 0"> {{date | date:'EEE d.MM'}}</th>
+      <td *matCellDef="let element"
+          class="highlightable-cell"
+          mat-cell>
+        <div
+          *ngFor="let shift of element.shifts[i]"
+          class="availability-time" [ngClass]="getShiftClass(shift,element,i)">
+          {{shift.start}} - {{shift.end}}
+        </div>
+      </td>
+      <td mat-cell *matFooterCellDef>
+        <div class="stats" *ngFor="let stat of this.scheduleService.possibleShifts[i]">
+          <div class="stat-header">
+            <div class="stat-name">{{stat.name}}</div>
+            <div class="stat-time">{{stat.start + ' - ' + stat.end}}</div>
+          </div>
+          <div class="stat-content">
+            <div class="stat-count"
+                 [ngClass]="stat.counter >= stat.minEmployees ? stat.counter <= stat.maxEmployees ? 'valid' : 'warning' : 'invalid'">
+              {{stat.counter}}/{{stat.minEmployees}}</div>
+            <div class="stat-max" *ngIf="stat.minEmployees !== stat.maxEmployees">maks. {{stat.maxEmployees}}</div>
+          </div>
+        </div>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="scheduleDisplayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: scheduleDisplayedColumns;"></tr>
+    <tr mat-row *matFooterRowDef="scheduleDisplayedColumns"></tr>
+  </table>
+</div>

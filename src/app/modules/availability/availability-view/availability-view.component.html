@@ -14,7 +14,7 @@
     <ng-container matColumnDef="name" sticky>
       <th mat-header-cell *matHeaderCellDef><button mat-icon-button (click)="hideNames = !hideNames"><mat-icon>{{hideNames ? 'chevron_right' : 'chevron_left'}}</mat-icon></button></th>
       <td mat-cell class="username-cell" *matCellDef="let element" >
-        <div class="username" [ngClass]="element.role">{{hideNames ? element.username[0] : element.username}}</div>
+        <div class="username" [ngClass]="element.role">{{hideNames ? getInitials(element.username) : element.username}}</div>
       </td>
     </ng-container>
 

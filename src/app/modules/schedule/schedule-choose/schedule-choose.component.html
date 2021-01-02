@@ -1,16 +1,22 @@
-<ng-container *ngIf="!year && !month; else edit">
-  <h2>
-    Wybierz grafik
-  </h2>
-  <div class="cards">
-    <div routerLink="new" class="card">
+<h2>
+  Wybierz grafik
+</h2>
+<ng-template #spinner>
+  <mat-spinner class="center-spinner"></mat-spinner>
+</ng-template>
+<div class="cards" *ngIf="status !== 'in-progress';else spinner">
+  <div *ngIf="mode === 'edit'" class="card-container">
+    <a routerLink="new" class="card dashed">
       <mat-icon>add</mat-icon>
       Nowy
-    </div>
-    <div class="card" [routerLink]="['/schedule/edit',schedule.split('-')[1], schedule.split('-')[0]]"
-         *ngFor="let schedule of schedules">{{schedule}}</div>
+    </a>
   </div>
-</ng-container>
-<ng-template #edit>
-  <h2>Edycja {{month}}-{{year}}</h2>
-</ng-template>
+  <div class="card-container" *ngFor="let schedule of schedules">
+    <a class="card" [routerLink]="['/schedule', mode,schedule.split('-')[1], schedule.split('-')[0]]"
+    >{{getScheduleDate(schedule) | date:'LLLL y'}}
+    </a>
+    <button *ngIf="mode === 'edit'" mat-stroked-button (click)="removeSchedule(schedule)" color="warn">Usuń</button>
+  </div>
+</div>
+
+

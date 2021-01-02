@@ -164,13 +164,10 @@
             margin-left: 1em;
             padding: .5em 1em;
             border-radius: 999px;
-            color: $blue-500;
-            border: 2px solid $blue-500;
-            //border: 2px solid $gray-500;
-            //color: $gray-500;
+            color: $gray-500;
+            border: 2px solid $gray-500;
 
             &.included {
-              //background-color: $green-200;
               border-color: $green-500;
               color: $green-500;
 
@@ -208,20 +205,16 @@
           }
 
           .availability-time {
-            //border: 2px solid $gray-500;
-            //color: $gray-500;
-            //color: $blue-500;
-            //border: 2px solid $blue-500;
-            background-color: $green-500;
-            color: white;
+            background-color: $green-400;
+            color: $gray-800;
             border-radius: 6px;
-            padding: .5em 1em;
+            line-height: 3em;
             flex-grow: 1;
             font-weight: 500;
             text-align: center;
 
             &.preferred {
-              background-color: $yellow-500;
+              background-color: $yellow-400;
             }
           }
 

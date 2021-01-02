@@ -89,7 +89,6 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
   }
 
   wrongLink(reason?: any): void {
-    console.log(reason);
     let message = 'Niepoprawny link';
     if (reason && reason.code) {
       switch (reason.code) {
@@ -142,7 +141,6 @@ export class ActionsManagerComponent implements OnInit, OnDestroy {
         this.snackService.successSnack('Hasło zmienione pomyślnie!');
         await this.router.navigate(['..', 'sign-in'], {relativeTo: this.route});
       } catch (authError) {
-        console.log(authError);
         switch (authError.code) {
           case 'auth/weak-password': {
             this.controls.password.setErrors({weakPassword: true});

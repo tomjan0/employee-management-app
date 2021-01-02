@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {DataService} from '../../../core/services/data.service';
 import {AvailabilityViewData, LocalAvailabilitiesPositionDataModel} from '../../../models/availabilities-data.model';
 import {MatTable} from '@angular/material/table';
+import {getInitials} from '../../../core/utils/utils';
 
 
 @Component({
@@ -64,6 +65,8 @@ export class AvailabilityViewComponent implements OnInit, OnDestroy {
 
     const data = await this.loadAvailabilities(month, year, dayCount);
     this.data = [data];
+    this.displayedColumns = ['name', ...Array.from(Array(dayCount).keys()).map(i => `day${i}`)];
+
 
     const role = this.dataService.currentUserMemberInfo?.role;
     if ((role === 'owner' || role === 'manager') && this.dataService.organizationData) {
@@ -83,8 +86,6 @@ export class AvailabilityViewComponent implements OnInit, OnDestroy {
       return {date: tmp, periods: [], preferredPeriods: []};
     }));
 
-    this.displayedColumns = ['name', ...Array.from(Array(dayCount).keys()).map(i => `day${i}`)];
-
     const availabilities = await this.dataService.getAvailabilitiesDataOnce(month, year, uid);
     for (const pos of availabilities.positions) {
       const day = pos.timestamp.toDate().getDate();
@@ -99,4 +100,7 @@ export class AvailabilityViewComponent implements OnInit, OnDestroy {
     return {username: this.dataService.getMemberName(uid), role: info?.role || '', positions};
   }
 
+  getInitials(username: string): string {
+    return getInitials(username);
+  }
 }

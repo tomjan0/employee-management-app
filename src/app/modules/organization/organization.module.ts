@@ -11,6 +11,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {CreateOrganizationComponent} from './create-organization/create-organization.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {OrganizationSettingsComponent} from './organization-settings/organization-settings.component';
+import {SharedModule} from '../../shared/shared.module';
 
 
 @NgModule({
@@ -28,7 +29,8 @@ import {OrganizationSettingsComponent} from './organization-settings/organizatio
     MaterialModule,
     ClipboardModule,
     MatDialogModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SharedModule
   ]
 })
 export class OrganizationModule {

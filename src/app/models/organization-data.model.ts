@@ -10,3 +10,9 @@ export interface MemberDataModel {
   userId: string;
   role: MemberRole;
 }
+
+export interface MergedMemberDataModel {
+  userId: string;
+  role: MemberRole;
+  username: string;
+}

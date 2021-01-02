@@ -1,1 +1,242 @@
-<app-schedule-choose></app-schedule-choose>
+<div class="top-bar">
+  <h2>{{date | date:'LLLL y'}}</h2>
+  <div class="controls">
+    <button [disabled]="status === 'in-progress'" (click)="generate()" mat-button color="accent">
+      <mat-icon matPrefix>smart_button</mat-icon>
+      Wygeneruj
+    </button>
+    <button [disabled]="status === 'in-progress'" (click)="clear()" mat-stroked-button color="warn">
+      <mat-icon matPrefix>backspace</mat-icon>
+      Wczyść
+    </button>
+    <button [disabled]="status === 'in-progress'" (click)="save(true)" mat-button color="primary">
+      <mat-icon matPrefix>publish</mat-icon>
+      Opublikuj
+    </button>
+    <button [disabled]="status === 'in-progress'" (click)="save()" mat-raised-button color="primary">
+      <mat-icon matPrefix>save</mat-icon>
+      Zapisz
+    </button>
+  </div>
+</div>
+<ng-template #spinner>
+  <mat-spinner class="center-spinner"></mat-spinner>
+</ng-template>
+<mat-tab-group *ngIf="status !== 'in-progress'; else spinner" dynamicHeight>
+  <mat-tab label="Grafik">
+    <div class="table-container" *ngIf="scheduleService.schedule.length > 0">
+      <table mat-table [dataSource]="scheduleService.schedule" cdkDropListGroup>
+        <ng-container matColumnDef="name" sticky>
+          <th class="header-date" mat-header-cell *matHeaderCellDef>
+            <button mat-icon-button (click)="hideNames = !hideNames">
+              <mat-icon>{{hideNames ? 'chevron_right' : 'chevron_left'}}</mat-icon>
+            </button>
+          </th>
+          <th mat-header-cell *matHeaderCellDef>Dostępne zmiany</th>
+          <td mat-cell class="username-cell" *matCellDef="let element;">
+            <div class="username"
+                 [ngClass]="element.assignee.role">{{hideNames ? getInitials(element.assignee.username) : element.assignee.username}}</div>
+            <div class="user-hours">{{hideNames ? '' : 'Godziny:'}}
+              <span>{{element.assignee.hours}}</span></div>
+          </td>
+          <td class="username-cell" mat-cell *matFooterCellDef>
+            <div class="username">{{hideNames ? 'S' : 'Statystyki'}}</div>
+          </td>
+        </ng-container>
+
+        <ng-container [matColumnDef]="'pos-shifts-name'" sticky>
+          <td class="username-cell" mat-cell *matHeaderCellDef>
+            <div class="username">{{hideNames ? 'D' : 'Dostępne zmiany'}}</div>
+          </td>
+        </ng-container>
+
+        <ng-container *ngFor="let date of headerDates; index as i" [matColumnDef]="'pos-shifts-day-' + i">
+          <td class="header" mat-cell cdkDropList [cdkDropListData]="{userEntry: undefined, id: i}"
+              (cdkDropListDropped)="drop($event)" *matHeaderCellDef>
+            <div cdkDragLockAxis="y" cdkDrag (cdkDragStarted)="calcAvailabilitiesClasses(shift, i)"
+                 (cdkDragEnded)="clearAvailabilitiesClasses(i)"
+                 *ngFor="let shift of possibleShifts[i]"
+                 class="availability-time"> {{shift.start}}
+              - {{shift.end}}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container *ngFor="let date of headerDates; index as i" [matColumnDef]="'day-' + i">
+          <th mat-header-cell class="header-date" *matHeaderCellDef [class.saturday]="date.getDay() === 6"
+              [class.sunday]="date.getDay() === 0"> {{date | date:'EEE d.MM'}}</th>
+          <td (cdkDropListDropped)="drop($event)" *matCellDef="let element"
+              [cdkDropListData]="{userEntry: element, id: i}"
+              class="highlightable-cell" [ngClass]="element.helper.availabilityClasses[i]" cdkDropList
+              mat-cell>
+            <div cdkDragLockAxis="y" cdkDrag (cdkDragStarted)="calcAvailabilitiesClasses(shift, i)"
+                 (cdkDragEnded)="clearAvailabilitiesClasses(i)"
+                 *ngFor="let shift of element.shifts[i]"
+                 class="availability-time" [ngClass]="getShiftClass(shift,element,i)">
+              <div *cdkDragPlaceholder class="availability-time placeholder">
+                {{shift.start}} - {{shift.end}}
+              </div>
+              {{shift.start}} - {{shift.end}}
+            </div>
+
+          </td>
+          <td mat-cell *matFooterCellDef>
+            <div class="stats" *ngFor="let stat of this.possibleShifts[i]">
+              <div class="stat-header">
+                <div class="stat-name">{{stat.name}}</div>
+                <div class="stat-time">{{stat.start + ' - ' + stat.end}}</div>
+              </div>
+              <div class="stat-content">
+                <div class="stat-count"
+                     [ngClass]="stat.counter >= stat.minEmployees ? stat.counter <= stat.maxEmployees ? 'valid' : 'warning' : 'invalid'">
+                  {{stat.counter}}/{{stat.minEmployees}}</div>
+                <div class="stat-max" *ngIf="stat.minEmployees !== stat.maxEmployees">maks. {{stat.maxEmployees}}</div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="scheduleDisplayedColumns"></tr>
+        <tr mat-row *matHeaderRowDef="possibleShiftsDisplayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: scheduleDisplayedColumns;"></tr>
+        <tr mat-footer-row *matFooterRowDef="scheduleDisplayedColumns"></tr>
+      </table>
+    </div>
+  </mat-tab>
+  <mat-tab label="Konfiguracja">
+    <div class="centered-tab">
+      <div class="config-shift-day" [ngClass]="day" *ngFor="let day of daysShortArray; index as i">
+        <h3 class="day-title">{{daysNamesArray[i] | date:'EEEE'}}</h3>
+        <mat-table [dataSource]="this.scheduleService.config[day]">
+          <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef> Nazwa</mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="start">
+            <mat-header-cell *matHeaderCellDef> Początek</mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.start | date:'shortTime'}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="end">
+            <mat-header-cell *matHeaderCellDef> Koniec</mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.end | date:'shortTime'}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="maxEmployees">
+            <mat-header-cell *matHeaderCellDef> Maks. prac.</mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.maxEmployees}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="minEmployees">
+            <mat-header-cell *matHeaderCellDef> Min. prac.</mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.minEmployees}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="delete">
+            <mat-header-cell *matHeaderCellDef></mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <button color="warn" class="delete-btn" mat-icon-button (click)="removeShift(day, element)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </mat-cell>
+          </ng-container>
+
+
+          <mat-header-row *matHeaderRowDef="configDisplayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: configDisplayedColumns;"></mat-row>
+        </mat-table>
+        <div class="buttons">
+          <button color="primary" class="shift-control-button" (click)="addShift(day)"
+                  mat-button>
+            <mat-icon>add</mat-icon>
+            <span>Dodaj</span>
+          </button>
+          <button color="primary" class="shift-control-button" (click)="copyShifts(day)"
+                  mat-button>
+            <mat-icon>copy</mat-icon>
+            <span>Skopiuj do reszty dni</span>
+          </button>
+          <button color="primary" class="shift-control-button" (click)="overwriteShifts(day)"
+                  mat-button>
+            <mat-icon>swap_horiz</mat-icon>
+            <span>Nadpisz do reszty dni</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </mat-tab>
+  <mat-tab label="Wyjątki">
+    <div class="centered-tab">
+      <form class="add-exception-form" [formGroup]="exceptionForm" (ngSubmit)="addException()">
+        <mat-form-field appearance="outline">
+          <mat-label>Data</mat-label>
+          <input matInput [matDatepicker]="dp" [formControl]="exceptionDate" [min]="exceptionDateMin"
+                 [max]="exceptionDateMax" required>
+          <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+          <mat-datepicker #dp>
+          </mat-datepicker>
+          <mat-error *ngIf="exceptionDate.invalid">Nieprawidłowa data</mat-error>
+        </mat-form-field>
+
+        <button type="submit" mat-raised-button color="primary" [disabled]="exceptionDate.invalid">Dodaj wyjątek
+        </button>
+      </form>
+      <div class="config-shift-day" [ngClass]="getClass(exception)" *ngFor="let exception of exceptions; index as i">
+        <h3 class="day-title">{{exception.date | date:'fullDate'}}</h3>
+        <table mat-table [dataSource]="exception.shifts">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef> Nazwa</th>
+            <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="start">
+            <th mat-header-cell *matHeaderCellDef> Początek</th>
+            <td mat-cell *matCellDef="let element"> {{element.start | date:'shortTime'}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="end">
+            <th mat-header-cell *matHeaderCellDef> Koniec</th>
+            <td mat-cell *matCellDef="let element"> {{element.end | date:'shortTime'}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="maxEmployees">
+            <th mat-header-cell *matHeaderCellDef> Maks. prac.</th>
+            <td mat-cell *matCellDef="let element"> {{element.maxEmployees}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="minEmployees">
+            <th mat-header-cell *matHeaderCellDef> Min. prac.</th>
+            <td mat-cell *matCellDef="let element"> {{element.minEmployees}} </td>
+          </ng-container>
+
+          <ng-container stickyEnd matColumnDef="delete">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element">
+              <button color="warn" class="delete-btn" mat-icon-button
+                      (click)="removeExceptionShift(exception, element)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+
+          <tr mat-header-row
+              *matHeaderRowDef="['name', 'start', 'end', 'minEmployees', 'maxEmployees', 'delete']"></tr>
+          <tr mat-row
+              *matRowDef="let row; columns: ['name', 'start', 'end', 'minEmployees', 'maxEmployees', 'delete'];"></tr>
+        </table>
+        <div class="buttons">
+          <button color="primary" class="shift-control-button" (click)="addExceptionShift(exception)" mat-button>
+            <mat-icon>add</mat-icon>
+            <span>Dodaj</span>
+          </button>
+          <button color="warn" class="shift-control-button" mat-button (click)="removeException(exception)">Usuń
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </mat-tab>
+</mat-tab-group>
