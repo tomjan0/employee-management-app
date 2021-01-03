@@ -14,6 +14,7 @@ import ConfigModel, {ConfigShiftModel} from '../../models/config.model';
 import {DayShort} from '../types/custom.types';
 import firestoreUtils = firebase.firestore;
 import Timestamp = firebase.firestore.Timestamp;
+import {environment} from '../../../environments/environment';
 
 
 @Injectable({
@@ -233,7 +234,7 @@ export class DataService {
   }
 
   get organizationInviteLink(): string {
-    return `http://localhost:4200/organization/join?orgId=${this.organizationData?.id}`;
+    return `${environment.baseUrl}/organization/join?orgId=${this.organizationData?.id}`;
   }
 
   get defaultConfigDoc(): AngularFirestoreDocument<ConfigModel> | undefined {
