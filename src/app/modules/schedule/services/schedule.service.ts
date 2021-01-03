@@ -79,7 +79,11 @@ export class ScheduleService {
   async createNewSchedule(month: number, year: number, config: ConfigModel, exceptions: ConfigExceptionShift[]): Promise<void> {
     if (this.dataService.organizationData) {
       const schedulesDoc = this.firestore.collection('schedules').doc(this.dataService.organizationData.id);
+      const doc = await schedulesDoc.get().toPromise();
       const batch = this.firestore.firestore.batch();
+      if (!doc.exists) {
+        batch.set(schedulesDoc.ref, {schedules: []});
+      }
       batch.update(schedulesDoc.ref, {schedules: this.dataService.utils.FieldValue.arrayUnion(`${month}-${year}`)});
       batch.set(schedulesDoc.collection(`${month}-${year}`).doc('config').ref, {...config, exceptions});
       await batch.commit();
