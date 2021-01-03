@@ -12,9 +12,9 @@ import PublicUserDataModel from '../../models/public-user-data.model';
 import {Router} from '@angular/router';
 import ConfigModel, {ConfigShiftModel} from '../../models/config.model';
 import {DayShort} from '../types/custom.types';
+import {environment} from '../../../environments/environment';
 import firestoreUtils = firebase.firestore;
 import Timestamp = firebase.firestore.Timestamp;
-import {environment} from '../../../environments/environment';
 
 
 @Injectable({
@@ -76,13 +76,16 @@ export class DataService {
           // this.loadOrganizationData(0);
         }
         if (!this.organizationData) {
-          this.loadOrganizationData(0);
+          const savedOrgIndex = Number(this.getLocal(`${this.uid}-orgIndex`));
+
+          this.loadOrganizationData(savedOrgIndex < this.userData.organizations.length ? savedOrgIndex : 0);
         }
       }
     });
   }
 
   loadOrganizationData(organizationIndex: number): void {
+    this.setLocal(`${this.uid}-orgIndex`, String(organizationIndex));
     if (this.userData && this.userData.organizations[organizationIndex]) {
       // subscribe to given organization data
       this.organizationDataDoc = this.firestore.collection('organizations').doc(this.userData.organizations[organizationIndex]);
@@ -172,7 +175,7 @@ export class DataService {
   get mergedMembersInfo(): MergedMemberDataModel[] {
     const res: MergedMemberDataModel[] = [];
     if (this.organizationData && this.additionalOrganizationData) {
-      for (let i = 0; i < this.organizationData.members.length; i++){
+      for (let i = 0; i < this.organizationData.members.length; i++) {
         const member = this.organizationData.members[i];
         res.push({...member, username: this.additionalOrganizationData.membersUsernames[i]});
       }
