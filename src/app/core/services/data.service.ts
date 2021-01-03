@@ -32,7 +32,8 @@ export class DataService {
   organizationUnsubscribe = new Subject<boolean>();
   userUnsubscribe = new Subject<boolean>();
 
-  constructor(private firestore: AngularFirestore, private router: Router) {
+  constructor(private firestore: AngularFirestore,
+              private router: Router) {
   }
 
   // tslint:disable-next-line:typedef
@@ -212,11 +213,11 @@ export class DataService {
   }
 
   resetOrganizationData(): void {
+    this.organizationDataReady = new Subject<boolean>();
     this.organizationUnsubscribe.next(true);
     this.organizationData = undefined;
     this.organizationDataDoc = undefined;
     this.additionalOrganizationData = undefined;
-    this.organizationDataReady = new Subject<boolean>();
     this.router.navigateByUrl('/');
   }
 
