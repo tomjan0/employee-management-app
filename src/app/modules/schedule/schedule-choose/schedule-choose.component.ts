@@ -51,7 +51,7 @@ export class ScheduleChooseComponent implements OnInit {
     } catch (e) {
       this.snackService.errorSnack();
     } finally {
-      this.status = 'in-progress';
+      this.status = 'not-started';
     }
   }
 

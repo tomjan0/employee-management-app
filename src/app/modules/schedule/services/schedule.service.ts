@@ -7,13 +7,14 @@ import ConfigModel, {
   ConfigWithExceptionsModel,
   PeriodicConfigShiftModel
 } from '../../../models/config.model';
-import {Subscription} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
 import {SavedSchedule, ScheduleUserEntry} from '../../../models/schedule.model';
 import {getDaysCount} from '../../../core/utils/utils';
 import firebase from 'firebase';
 import {DayShortNames} from '../../../core/enums/config.enums';
 import {DayShort} from '../../../core/types/custom.types';
 import {formatDate} from '@angular/common';
+import {takeUntil} from 'rxjs/operators';
 import Timestamp = firebase.firestore.Timestamp;
 
 @Injectable({
@@ -30,11 +31,15 @@ export class ScheduleService {
   config: ConfigWithExceptionsModel = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
   year = 0;
   month = 0;
+  ngUnsubscribe = new Subject<boolean>();
 
 
   constructor(private dataService: DataService) {
     this.firestore = this.dataService.getFirestore();
-
+    this.dataService.organizationUnsubscribe.subscribe(() => {
+      this.resetSchedules();
+      this.loadSchedules();
+    });
     this.loadSchedules();
   }
 
@@ -42,10 +47,25 @@ export class ScheduleService {
     await this.dataService.waitForOrganizationData();
     if (this.dataService.organizationData) {
       this.schedulesDoc = this.firestore.collection('schedules').doc<{ schedules: string [] }>(this.dataService.organizationData.id);
-      this.schedulesDoc.valueChanges().subscribe(next => {
+      this.schedulesDoc.valueChanges().pipe(takeUntil(this.ngUnsubscribe)).subscribe(next => {
         this.schedules = next?.schedules.sort(this.compareScheduleTitles) || [];
       });
     }
+  }
+
+  resetSchedules(): void {
+    this.ngUnsubscribe.next(true);
+    this.currentScheduleSubscription?.unsubscribe();
+    this.currentScheduleSubscription = undefined;
+
+    this.schedules = [];
+    this.schedulesDoc = undefined;
+    this.scheduleCollection = undefined;
+    this.schedule = [];
+    this.possibleShifts = [];
+    this.config = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
+    this.year = 0;
+    this.month = 0;
   }
 
   compareScheduleTitles(a: string, b: string): number {
@@ -59,7 +79,11 @@ export class ScheduleService {
   async createNewSchedule(month: number, year: number, config: ConfigModel, exceptions: ConfigExceptionShift[]): Promise<void> {
     if (this.dataService.organizationData) {
       const schedulesDoc = this.firestore.collection('schedules').doc(this.dataService.organizationData.id);
+      const doc = await schedulesDoc.get().toPromise();
       const batch = this.firestore.firestore.batch();
+      if (!doc.exists) {
+        batch.set(schedulesDoc.ref, {schedules: []});
+      }
       batch.update(schedulesDoc.ref, {schedules: this.dataService.utils.FieldValue.arrayUnion(`${month}-${year}`)});
       batch.set(schedulesDoc.collection(`${month}-${year}`).doc('config').ref, {...config, exceptions});
       await batch.commit();

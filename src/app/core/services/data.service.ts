@@ -12,6 +12,7 @@ import PublicUserDataModel from '../../models/public-user-data.model';
 import {Router} from '@angular/router';
 import ConfigModel, {ConfigShiftModel} from '../../models/config.model';
 import {DayShort} from '../types/custom.types';
+import {environment} from '../../../environments/environment';
 import firestoreUtils = firebase.firestore;
 import Timestamp = firebase.firestore.Timestamp;
 
@@ -31,7 +32,8 @@ export class DataService {
   organizationUnsubscribe = new Subject<boolean>();
   userUnsubscribe = new Subject<boolean>();
 
-  constructor(private firestore: AngularFirestore, private router: Router) {
+  constructor(private firestore: AngularFirestore,
+              private router: Router) {
   }
 
   // tslint:disable-next-line:typedef
@@ -74,13 +76,16 @@ export class DataService {
           // this.loadOrganizationData(0);
         }
         if (!this.organizationData) {
-          this.loadOrganizationData(0);
+          const savedOrgIndex = Number(this.getLocal(`${this.uid}-orgIndex`));
+
+          this.loadOrganizationData(savedOrgIndex < this.userData.organizations.length ? savedOrgIndex : 0);
         }
       }
     });
   }
 
   loadOrganizationData(organizationIndex: number): void {
+    this.setLocal(`${this.uid}-orgIndex`, String(organizationIndex));
     if (this.userData && this.userData.organizations[organizationIndex]) {
       // subscribe to given organization data
       this.organizationDataDoc = this.firestore.collection('organizations').doc(this.userData.organizations[organizationIndex]);
@@ -170,7 +175,7 @@ export class DataService {
   get mergedMembersInfo(): MergedMemberDataModel[] {
     const res: MergedMemberDataModel[] = [];
     if (this.organizationData && this.additionalOrganizationData) {
-      for (let i = 0; i < this.organizationData.members.length; i++){
+      for (let i = 0; i < this.organizationData.members.length; i++) {
         const member = this.organizationData.members[i];
         res.push({...member, username: this.additionalOrganizationData.membersUsernames[i]});
       }
@@ -211,11 +216,11 @@ export class DataService {
   }
 
   resetOrganizationData(): void {
+    this.organizationDataReady = new Subject<boolean>();
     this.organizationUnsubscribe.next(true);
     this.organizationData = undefined;
     this.organizationDataDoc = undefined;
     this.additionalOrganizationData = undefined;
-    this.organizationDataReady = new Subject<boolean>();
     this.router.navigateByUrl('/');
   }
 
@@ -233,7 +238,7 @@ export class DataService {
   }
 
   get organizationInviteLink(): string {
-    return `http://localhost:4200/organization/join?orgId=${this.organizationData?.id}`;
+    return `${environment.baseUrl}/organization/join?orgId=${this.organizationData?.id}`;
   }
 
   get defaultConfigDoc(): AngularFirestoreDocument<ConfigModel> | undefined {
