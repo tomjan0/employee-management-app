@@ -28,6 +28,10 @@
       <mat-icon>edit</mat-icon>
       <span>Edycja</span>
     </a>
+    <a *ngIf="isCurrentUserOwnerOrManager" mat-list-item routerLink="/schedule/settings" routerLinkActive="active" matRipple>
+      <mat-icon>settings</mat-icon>
+      <span>Ustawienia</span>
+    </a>
     <a mat-list-item disabled>
       <span>Dyspozycyjność</span>
     </a>

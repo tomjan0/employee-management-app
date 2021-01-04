@@ -11,13 +11,22 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {SharedModule} from '../../shared/shared.module';
 import {DragDropModule} from '@angular/cdk/drag-drop';
 import {MatTabsModule} from '@angular/material/tabs';
-import { ScheduleViewComponent } from './schedule-view/schedule-view.component';
-import { GenerateScheduleDialogComponent } from './generate-schedule-dialog/generate-schedule-dialog.component';
+import {ScheduleViewComponent} from './schedule-view/schedule-view.component';
+import {GenerateScheduleDialogComponent} from './generate-schedule-dialog/generate-schedule-dialog.component';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import {ScheduleStatsComponent} from './schedule-stats/schedule-stats.component';
+import {ScheduleSettingsComponent} from './schedule-settings/schedule-settings.component';
 
 
 @NgModule({
-  declarations: [ScheduleEditComponent, ScheduleChooseComponent, ScheduleNewComponent, ScheduleViewComponent, GenerateScheduleDialogComponent],
+  declarations: [
+    ScheduleEditComponent,
+    ScheduleChooseComponent,
+    ScheduleNewComponent,
+    ScheduleViewComponent,
+    GenerateScheduleDialogComponent,
+    ScheduleStatsComponent,
+    ScheduleSettingsComponent],
   imports: [
     CommonModule,
     ScheduleRoutingModule,
