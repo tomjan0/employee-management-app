@@ -16,7 +16,7 @@ const routes: Routes = [
   {
     path: 'availability',
     loadChildren: () => import('./modules/availability/availability.module').then(m => m.AvailabilityModule),
-    canActivate: [NoOrganizationChosenGuard, ...canActivate(redirectUnauthorizedToAuth).canActivate],
+    canActivate: [...canActivate(redirectUnauthorizedToAuth).canActivate, NoOrganizationChosenGuard],
     data: canActivate(redirectUnauthorizedToAuth).data
   },
   {
@@ -27,7 +27,7 @@ const routes: Routes = [
   {
     path: 'schedule',
     loadChildren: () => import('./modules/schedule/schedule.module').then(m => m.ScheduleModule),
-    canActivate: [NoOrganizationChosenGuard, ...canActivate(redirectUnauthorizedToAuth).canActivate],
+    canActivate: [...canActivate(redirectUnauthorizedToAuth).canActivate, NoOrganizationChosenGuard],
     data: canActivate(redirectUnauthorizedToAuth).data
   },
   {
