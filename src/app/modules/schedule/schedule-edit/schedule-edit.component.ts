@@ -256,6 +256,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
     } else {
       this.exceptions.push({date, shifts});
     }
+    this.snackService.errorSnack('Wyjątek został dodany');
   }
 
   removeExceptionShift(exception: ConfigExceptionShift, shift: ConfigShiftModel): void {

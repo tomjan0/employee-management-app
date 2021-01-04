@@ -102,6 +102,7 @@ export class ScheduleNewComponent implements OnInit {
     } else {
       this.exceptions.push({date, shifts});
     }
+    this.snackService.errorSnack('Wyjątek został dodany');
   }
 
   getClass(exception: ConfigExceptionShift): string {
