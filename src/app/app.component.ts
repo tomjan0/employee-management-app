@@ -5,6 +5,7 @@ import {DataService} from './core/services/data.service';
 import {take} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 import {OrganizationDataModel} from './models/organization-data.model';
+import {SnackService} from './core/services/snack.service';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +24,8 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(public authService: AuthService,
               private media: MediaMatcher,
               changeDetectorRef: ChangeDetectorRef,
-              public dataService: DataService) {
+              public dataService: DataService,
+              private snackService: SnackService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => {
       this.navOpen = !this.mobileQuery.matches;
@@ -64,4 +66,8 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.dataService.userOrganizationsObs;
   }
 
+  changeOrganization(organizationIndex: number): void {
+    this.dataService.changeOrganization(organizationIndex);
+    this.snackService.successSnack('Zmieniono organizację');
+  }
 }
