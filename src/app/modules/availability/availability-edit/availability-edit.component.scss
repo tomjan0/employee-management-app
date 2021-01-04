@@ -23,13 +23,13 @@
     display: flex;
   }
 
-  .month-controls {
+  .controls {
     display: flex;
     flex-direction: row;
     align-items: center;
     font-size: 1.25em;
 
-    .month-title {
+    .title {
       text-transform: capitalize;
     }
   }

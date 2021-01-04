@@ -7,6 +7,7 @@ import {ScheduleViewComponent} from './schedule-view/schedule-view.component';
 import {NoOrganizationChosenGuard} from '../../guards/no-organization-chosen.guard';
 import {OwnerOrManagerGuard} from '../../guards/owner-or-manager.guard';
 import {ScheduleSettingsComponent} from './schedule-settings/schedule-settings.component';
+import {ScheduleStatsComponent} from './schedule-stats/schedule-stats.component';
 
 
 const routes: Routes = [
@@ -16,7 +17,8 @@ const routes: Routes = [
   {path: 'edit/:year/:month', component: ScheduleEditComponent, canActivate: [NoOrganizationChosenGuard, OwnerOrManagerGuard]},
   {path: 'view', component: ScheduleChooseComponent, canActivate: [NoOrganizationChosenGuard]},
   {path: 'view/:year/:month', component: ScheduleViewComponent, canActivate: [NoOrganizationChosenGuard]},
-  {path: 'settings', component: ScheduleSettingsComponent, canActivate: [NoOrganizationChosenGuard, OwnerOrManagerGuard]}
+  {path: 'settings', component: ScheduleSettingsComponent, canActivate: [NoOrganizationChosenGuard, OwnerOrManagerGuard]},
+  {path: 'stats', component: ScheduleStatsComponent, canActivate: [NoOrganizationChosenGuard]},
 ];
 
 @NgModule({

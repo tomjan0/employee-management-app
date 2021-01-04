@@ -31,6 +31,7 @@ export class ScheduleService {
   config: ConfigWithExceptionsModel = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
   year = 0;
   month = 0;
+  schedulesReady = new Subject<boolean>();
   ngUnsubscribe = new Subject<boolean>();
 
 
@@ -49,14 +50,21 @@ export class ScheduleService {
       this.schedulesDoc = this.firestore.collection('schedules').doc<{ schedules: string [] }>(this.dataService.organizationData.id);
       this.schedulesDoc.valueChanges().pipe(takeUntil(this.ngUnsubscribe)).subscribe(next => {
         this.schedules = next?.schedules.sort(this.compareScheduleTitles) || [];
+        this.schedulesReady.next(true);
+        this.schedulesReady.complete();
       });
     }
+  }
+
+  async waitForSchedules(): Promise<void> {
+    await this.schedulesReady.toPromise();
   }
 
   resetSchedules(): void {
     this.ngUnsubscribe.next(true);
     this.currentScheduleSubscription?.unsubscribe();
     this.currentScheduleSubscription = undefined;
+    this.schedulesReady = new Subject<boolean>();
 
     this.schedules = [];
     this.schedulesDoc = undefined;
@@ -66,6 +74,20 @@ export class ScheduleService {
     this.config = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
     this.year = 0;
     this.month = 0;
+  }
+
+  async getAllSchedulesDataByYear(year: number): Promise<(SavedSchedule | undefined)[]> {
+    const res: (SavedSchedule | undefined)[] = Array.from(Array(12).keys()).map(() => undefined);
+    if (this.schedulesDoc) {
+      const schedulesInYear = this.schedules.filter(s => Number(s.split('-')[1]) === year);
+      for (const s of schedulesInYear) {
+        const doc = await this.schedulesDoc?.collection(s).doc<SavedSchedule>('public').get().toPromise();
+        if (doc.exists) {
+          res[Number(s.split('-')[0])] = doc.data();
+        }
+      }
+    }
+    return res;
   }
 
   compareScheduleTitles(a: string, b: string): number {
