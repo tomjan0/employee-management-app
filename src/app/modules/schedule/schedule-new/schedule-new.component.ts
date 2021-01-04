@@ -87,6 +87,7 @@ export class ScheduleNewComponent implements OnInit {
 
     const insertId = this.exceptions.findIndex(ex => ex.date.getDate() >= date.getDate());
     if (this.exceptions[insertId]?.date.getDate() === date.getDate()) {
+      this.snackService.errorSnack('Wyjątek już dodany');
       return;
     }
 
