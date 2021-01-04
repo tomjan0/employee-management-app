@@ -31,12 +31,13 @@
 
 .table-container {
   display: flex;
-  justify-content: center;
-  flex-grow: 1;
+  //flex-grow: 1;
   overflow: auto;
+
 
   .mat-table {
     background-color: transparent;
+    margin: auto;
   }
 
   .username-cell {
@@ -69,7 +70,6 @@
 
   .mat-table-sticky {
     background-color: $gray-100;
-    box-shadow: $shadow-md;
   }
 
   .mat-cell, .mat-header-cell {
@@ -85,7 +85,7 @@
     text-align: center;
     font-weight: 500;
     font-size: 1.1em;
-    box-shadow: $shadow-md;
+    //box-shadow: $shadow-md;
     white-space: nowrap;
     text-transform: capitalize;
 
