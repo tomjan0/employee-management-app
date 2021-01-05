@@ -24,7 +24,7 @@
       </mat-menu>
       <mat-menu #organizationMenu="matMenu">
         <button *ngFor="let org of organizations; index as i" mat-menu-item
-                (click)="dataService.changeOrganization(i)">{{(org | async)?.name}}</button>
+                (click)="changeOrganization(i)">{{(org | async)?.name}}</button>
         <button mat-menu-item  routerLink="/organization/create">
           <mat-icon>add</mat-icon>
           <span>Utwórz nową</span>

@@ -31,11 +31,13 @@
 
 .table-container {
   display: flex;
-  flex-grow: 1;
+  //flex-grow: 1;
   overflow: auto;
+
 
   .mat-table {
     background-color: transparent;
+    margin: auto;
   }
 
   .username-cell {
@@ -68,7 +70,6 @@
 
   .mat-table-sticky {
     background-color: $gray-100;
-    box-shadow: $shadow-md;
   }
 
   .mat-cell, .mat-header-cell {
@@ -84,44 +85,24 @@
     text-align: center;
     font-weight: 500;
     font-size: 1.1em;
-    box-shadow: $shadow-md;
+    //box-shadow: $shadow-md;
     white-space: nowrap;
+    text-transform: capitalize;
 
     &:not(:first-child) {
-      color: $green-500;
-      min-width: 9em;
-
-      &.saturday {
-        color: $yellow-500;
-      }
-
-      &.sunday {
-        color: $red-500;
-      }
+      min-width: 4em;
     }
   }
 
-  .mat-cell {
-    .availability-time {
-      box-shadow: $shadow-md;
-
-      background-color: $green-400;
-      color: $gray-800;
-      border-radius: 6px;
-      line-height: 3em;
-      flex-grow: 1;
-      font-weight: 500;
-      text-align: center;
-      white-space: nowrap;
-
-      &.preferred {
-        background-color: $yellow-400;
-      }
-
-      &:not(:last-child) {
-        margin-bottom: .25em;
-      }
-    }
+  .hours {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 6px;
+    background-color: white;
+    box-shadow: $shadow-md;
+    padding: .5em;
   }
 }
 

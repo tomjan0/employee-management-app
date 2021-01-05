@@ -1,0 +1,11 @@
+@import "src/styles/variables";
+
+:host {
+  width: 100%;
+  max-width: 800px;
+  padding: 1em;
+}
+
+section {
+  padding-bottom: 1em;
+}

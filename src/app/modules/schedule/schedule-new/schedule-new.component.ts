@@ -87,6 +87,7 @@ export class ScheduleNewComponent implements OnInit {
 
     const insertId = this.exceptions.findIndex(ex => ex.date.getDate() >= date.getDate());
     if (this.exceptions[insertId]?.date.getDate() === date.getDate()) {
+      this.snackService.errorSnack('Wyjątek już dodany');
       return;
     }
 
@@ -101,6 +102,7 @@ export class ScheduleNewComponent implements OnInit {
     } else {
       this.exceptions.push({date, shifts});
     }
+    this.snackService.errorSnack('Wyjątek został dodany');
   }
 
   getClass(exception: ConfigExceptionShift): string {
