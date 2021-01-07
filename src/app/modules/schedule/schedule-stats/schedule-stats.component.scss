@@ -103,6 +103,11 @@
     background-color: white;
     box-shadow: $shadow-md;
     padding: .5em;
+
+    &.sum {
+      background-color: unset;
+      box-shadow: none;
+    }
   }
 }
 
