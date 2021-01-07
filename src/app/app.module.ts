@@ -12,6 +12,7 @@ import {AngularFirestoreModule} from '@angular/fire/firestore';
 import {AngularFireFunctionsModule, REGION} from '@angular/fire/functions';
 import {MaterialModule} from './material.module';
 import {CoreModule} from './core/core.module';
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,8 @@ import {CoreModule} from './core/core.module';
     AppRoutingModule,
     BrowserAnimationsModule,
     MaterialModule,
-    CoreModule
+    CoreModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [{provide: REGION, useValue: 'europe-west3'}],
   bootstrap: [AppComponent]
