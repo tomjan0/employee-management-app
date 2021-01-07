@@ -12,8 +12,8 @@ import {
   ConfigExceptionShift,
   ConfigShiftDialogModel,
   ConfigShiftModel,
-  ScheduleConfig,
-  PeriodicConfigShiftModel
+  PeriodicConfigShiftModel,
+  ScheduleConfig
 } from '../../../models/config.model';
 import {DayShort, SimpleStatus} from '../../../core/types/custom.types';
 import {FormControl, FormGroup} from '@angular/forms';
@@ -339,7 +339,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
 
   async generate(): Promise<void> {
     const dialogRef = this.matDialog.open(GenerateScheduleDialogComponent);
-    const options: { forceMinimum: boolean; allowUnavailable: boolean } = await dialogRef.afterClosed().toPromise();
+    const options: { forceMinimum: boolean; forceHours: boolean, allowUnavailable: boolean } = await dialogRef.afterClosed().toPromise();
 
     if (options) {
       this.status = 'in-progress';
@@ -351,8 +351,12 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
       const preferences = [];
       const minEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.minEmployees));
       const maxEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.maxEmployees));
+      const minHours: number[] = [];
+      const maxHours: number[] = [];
 
       for (const userEntry of schedule) {
+        minHours.push(userEntry.assignee.minHours || 0);
+        maxHours.push(userEntry.assignee.maxHours || -1);
         const userAvailabilities = [];
         const userPreferences = [];
         for (let i = 0; i < possibleShifts.length; i++) {
@@ -371,7 +375,31 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
         preferences.push(userPreferences);
       }
 
-      const data = {shiftsPerDay, availabilities, preferences, minEmployees, maxEmployees, forceMinimum: options.forceMinimum};
+      let sumHours = 0;
+      let countShifts = 0;
+      for (const shifts of possibleShifts) {
+        for (const shift of shifts) {
+          const s = shift.start.split(':');
+          const e = shift.end.split(':');
+          sumHours += Number(e[0]) + Number(e[1]) / 60 - ((Number(s[0]) + Number(s[1]) / 60));
+          countShifts++;
+        }
+      }
+      const avgShift = sumHours / (countShifts || 1);
+      const minShifts = minHours.map(hours => Math.ceil(hours / avgShift));
+      const maxShifts = maxHours.map(hours => hours >= 0 ? Math.floor(hours / avgShift) : -1);
+
+      const data = {
+        shiftsPerDay,
+        availabilities,
+        preferences,
+        minEmployees,
+        maxEmployees,
+        minShifts,
+        maxShifts,
+        forceHours: options.forceHours,
+        forceMinimum: options.forceMinimum
+      };
 
       try {
         const response = await fetch('https://shift-scheduling-rest-api-welosfizjq-ey.a.run.app/api/schedule?data=' + JSON.stringify(data));
