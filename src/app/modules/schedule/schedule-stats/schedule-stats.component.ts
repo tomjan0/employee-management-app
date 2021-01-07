@@ -62,7 +62,6 @@ export class ScheduleStatsComponent implements OnInit {
     }
 
     const schedules = await this.scheduleService.getAllSchedulesDataByYear(this.date.getFullYear());
-    console.log(schedules);
 
     for (const user of data) {
       for (const [s, schedule] of schedules.entries()) {
