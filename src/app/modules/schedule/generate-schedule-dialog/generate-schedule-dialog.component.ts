@@ -8,6 +8,7 @@ import {FormControl} from '@angular/forms';
 })
 export class GenerateScheduleDialogComponent implements OnInit {
   forceMinimum = new FormControl(false);
+  forceHours = new FormControl(false);
 
   constructor() {
   }

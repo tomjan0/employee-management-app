@@ -39,4 +39,6 @@ export interface ScheduleMemberData extends MemberDataModel {
     preferredPeriods: AvailabilityPeriod[];
   }[];
   hours: number;
+  minHours?: number;
+  maxHours?: number;
 }

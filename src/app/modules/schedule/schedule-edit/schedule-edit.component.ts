@@ -12,7 +12,7 @@ import {
   ConfigExceptionShift,
   ConfigShiftDialogModel,
   ConfigShiftModel,
-  ConfigWithExceptionsModel,
+  ScheduleConfig,
   PeriodicConfigShiftModel
 } from '../../../models/config.model';
 import {DayShort, SimpleStatus} from '../../../core/types/custom.types';
@@ -20,9 +20,10 @@ import {FormControl, FormGroup} from '@angular/forms';
 import {DayShortNames} from '../../../core/enums/config.enums';
 import {AddConfigShiftDialogComponent} from '../../../shared/dialogs/add-config-shift-dialog/add-config-shift-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
-import {ScheduleUserEntry} from '../../../models/schedule.model';
+import {ScheduleMemberData, ScheduleUserEntry} from '../../../models/schedule.model';
 import {ConfirmDialogComponent} from '../../../shared/dialogs/confirm-dialog/confirm-dialog.component';
 import {GenerateScheduleDialogComponent} from '../generate-schedule-dialog/generate-schedule-dialog.component';
+import {SetMinMaxHoursDialogComponent} from '../set-min-max-hours-dialog/set-min-max-hours-dialog.component';
 
 @Component({
   selector: 'app-schedule-edit',
@@ -232,7 +233,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
     return this.scheduleService.config.exceptions;
   }
 
-  get config(): ConfigWithExceptionsModel {
+  get config(): ScheduleConfig {
     return this.scheduleService.config;
   }
 
@@ -404,7 +405,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
   async save(publish = false): Promise<void> {
     try {
       this.status = 'in-progress';
-      await this.scheduleService.saveSchedule(publish);
+      await this.scheduleService.save(publish);
       this.snackService.successSnack(publish ? 'Opublikowano' : 'Zapisano');
     } catch (e) {
       this.snackService.errorSnack();
@@ -423,5 +424,19 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
       }
     }
     this.scheduleService.refreshStats();
+  }
+
+  async setHours(assignee: ScheduleMemberData): Promise<void> {
+    const dialogRef = this.matDialog.open(SetMinMaxHoursDialogComponent, {
+      data: {
+        min: assignee.minHours || undefined,
+        max: assignee.maxHours || undefined
+      }
+    });
+    const res: { min: number, max: number } = await dialogRef.afterClosed().toPromise();
+    if (res) {
+      assignee.minHours = res.min;
+      assignee.maxHours = res.max;
+    }
   }
 }

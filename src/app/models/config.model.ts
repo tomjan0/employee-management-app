@@ -9,8 +9,13 @@ export default interface ConfigModel {
 }
 
 
-export interface ConfigWithExceptionsModel extends ConfigModel {
+export interface ScheduleConfig extends ConfigModel {
   exceptions: ConfigExceptionShift[];
+  hours: {
+    userId: string,
+    min?: number,
+    max?: number
+  }[];
 }
 
 export interface ConfigShiftModel {
@@ -21,7 +26,7 @@ export interface ConfigShiftModel {
   maxEmployees: number;
 }
 
-export interface PeriodicConfigShiftModel{
+export interface PeriodicConfigShiftModel {
   start: string;
   end: string;
   name: string;

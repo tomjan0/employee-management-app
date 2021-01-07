@@ -5,13 +5,17 @@
     przydzielenia zmiany niedostępnemu pracownikowi lub błędu, jeśli liczba pracowników jest mniejsza niż suma
     wszystkich potrzebnych osób dla danego dnia.
   </div>
+  <mat-checkbox [formControl]="forceHours">Wymuś minimalną liczbę godzin dla pracowników</mat-checkbox>
+  <div class="hint">Generator spróbuje wymusić minimalną liczbę godzin dla pracowników. Może to doprowadzić do
+    przydzielenia zmiany niedostępnemu pracownikowi lub błędu, kiedy dyspozycyjność pracowników nie jest wystarczająca.
+  </div>
   <div class="warning">
     <mat-icon>warning</mat-icon>
     <div>Nizależnie od wybranych opcji, w przypadku powodzenia lokalny grafik zostanie nadpisany</div>
   </div>
 </mat-dialog-content>
 <mat-dialog-actions>
-  <button mat-raised-button color="primary" type="submit" [mat-dialog-close]="{forceMinimum: forceMinimum.value}">
+  <button mat-raised-button color="primary" type="submit" [mat-dialog-close]="{forceMinimum: forceMinimum.value, forceHours: forceHours.value}">
     Generuj
   </button>
   <button color="warn" mat-stroked-button mat-dialog-close>Anuluj</button>

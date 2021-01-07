@@ -37,7 +37,24 @@
             <div class="username"
                  [ngClass]="element.assignee.role">{{hideNames ? getInitials(element.assignee.username) : element.assignee.username}}</div>
             <div class="user-hours">{{hideNames ? '' : 'Godziny:'}}
-              <span>{{element.assignee.hours}}</span></div>
+              <span> {{element.assignee.hours}}</span>
+            </div>
+            <div class="user-hours">
+              <ng-container *ngIf="element.assignee.minHours">
+                {{hideNames ? '>=' : 'min.:'}}
+                <span class="limit"
+                  [class.invalid]="element.assignee.hours < element.assignee.minHours">{{element.assignee.minHours}}</span>
+              </ng-container>
+            </div>
+            <div class="user-hours">
+              <ng-container *ngIf="element.assignee.maxHours">
+                {{hideNames ? '<=' : 'maks.:'}}
+                <span class="limit"
+                  [class.invalid]="element.assignee.hours > element.assignee.maxHours">{{element.assignee.maxHours}}</span>
+              </ng-container>
+            </div>
+            <button (click)="setHours(element.assignee)" mat-button
+                    class="user-hours">{{hideNames ? '' : 'Ustaw min. i maks.'}}</button>
           </td>
           <td class="username-cell" mat-cell *matFooterCellDef>
             <div class="username">{{hideNames ? 'S' : 'Statystyki'}}</div>
