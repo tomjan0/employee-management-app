@@ -36,7 +36,10 @@ def generate_schedule():
     preferences = parsed['preferences']
     min_employees = parsed['minEmployees']
     max_employees = parsed['maxEmployees']
+    min_shifts = parsed['minShifts']
+    max_shifts = parsed['maxShifts']
     force_minimum = parsed['forceMinimum']
+    force_hours = parsed['forceHours']
 
     # Setting basic parameters
     num_of_employees = len(availabilities)
@@ -47,15 +50,15 @@ def generate_schedule():
     range_of_employees = range(num_of_employees)
     range_of_days = range(num_of_days)
 
-    # For now just allow any number of shifts
-    min_shifts_per_employee = [0 for e in range_of_employees]
-    max_shifts_per_employee = [999 for e in range_of_employees]
+    # Load shifts per employee limits
+    min_shifts_per_employee = min_shifts
+    max_shifts_per_employee = max_shifts
 
-    # Build avb and pref matrices
+    # Load avb and pref matrices
     avb = availabilities
     pref = preferences
 
-    # Calculating sums and factors required to calculate weights
+    # Calculating sums and factors requiered to calculate weights
     avb_sums = [sum([sum(day) for day in days]) for days in avb]
     pref_sums = [sum([sum(day) for day in days]) for days in pref]
 
@@ -111,14 +114,15 @@ def generate_schedule():
             model.Add(sum(shifts[(e, d, s)]
                           for s in range(num_of_shifts_per_day[d])) <= 1)
 
-    # Constraint giving that employee has been assigned correct number of shifts
+    # Constraint giving that employee has been assigned correct number of shifts overall
     for e in range_of_employees:
         num_shifts_worked = 0
         for d in range_of_days:
             for s in range(num_of_shifts_per_day[d]):
                 num_shifts_worked += shifts[(e, d, s)]
-        model.Add(num_shifts_worked >= min_shifts_per_employee[e])
-        model.Add(num_shifts_worked <= max_shifts_per_employee[e])
+        model.Add(num_shifts_worked >= (min_shifts_per_employee[e] if force_hours else 0))
+        if max_shifts_per_employee[e] >= 0:
+            model.Add(num_shifts_worked <= max_shifts_per_employee[e])
 
     # Setting objective function
     model.Maximize(
@@ -127,7 +131,7 @@ def generate_schedule():
 
     # Solving model
     solver = cp_model.CpSolver()
-    solver.parameters.max_time_in_seconds = 5
+    solver.parameters.max_time_in_seconds = 60
     solver.Solve(model)
 
     # Creating result matrix which holds solved values
