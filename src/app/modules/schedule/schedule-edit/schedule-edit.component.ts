@@ -12,17 +12,18 @@ import {
   ConfigExceptionShift,
   ConfigShiftDialogModel,
   ConfigShiftModel,
-  ConfigWithExceptionsModel,
-  PeriodicConfigShiftModel
+  PeriodicConfigShiftModel,
+  ScheduleConfig
 } from '../../../models/config.model';
 import {DayShort, SimpleStatus} from '../../../core/types/custom.types';
 import {FormControl, FormGroup} from '@angular/forms';
 import {DayShortNames} from '../../../core/enums/config.enums';
 import {AddConfigShiftDialogComponent} from '../../../shared/dialogs/add-config-shift-dialog/add-config-shift-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
-import {ScheduleUserEntry} from '../../../models/schedule.model';
+import {ScheduleMemberData, ScheduleUserEntry} from '../../../models/schedule.model';
 import {ConfirmDialogComponent} from '../../../shared/dialogs/confirm-dialog/confirm-dialog.component';
 import {GenerateScheduleDialogComponent} from '../generate-schedule-dialog/generate-schedule-dialog.component';
+import {SetMinMaxHoursDialogComponent} from '../set-min-max-hours-dialog/set-min-max-hours-dialog.component';
 
 @Component({
   selector: 'app-schedule-edit',
@@ -232,7 +233,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
     return this.scheduleService.config.exceptions;
   }
 
-  get config(): ConfigWithExceptionsModel {
+  get config(): ScheduleConfig {
     return this.scheduleService.config;
   }
 
@@ -338,7 +339,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
 
   async generate(): Promise<void> {
     const dialogRef = this.matDialog.open(GenerateScheduleDialogComponent);
-    const options: { forceMinimum: boolean; allowUnavailable: boolean } = await dialogRef.afterClosed().toPromise();
+    const options: { forceMinimum: boolean; forceHours: boolean, allowUnavailable: boolean } = await dialogRef.afterClosed().toPromise();
 
     if (options) {
       this.status = 'in-progress';
@@ -350,8 +351,12 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
       const preferences = [];
       const minEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.minEmployees));
       const maxEmployees = this.possibleShifts.map(shifts => shifts.map(s => s.maxEmployees));
+      const minHours: number[] = [];
+      const maxHours: number[] = [];
 
       for (const userEntry of schedule) {
+        minHours.push(userEntry.assignee.minHours || 0);
+        maxHours.push(userEntry.assignee.maxHours || -1);
         const userAvailabilities = [];
         const userPreferences = [];
         for (let i = 0; i < possibleShifts.length; i++) {
@@ -370,7 +375,31 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
         preferences.push(userPreferences);
       }
 
-      const data = {shiftsPerDay, availabilities, preferences, minEmployees, maxEmployees, forceMinimum: options.forceMinimum};
+      let sumHours = 0;
+      let countShifts = 0;
+      for (const shifts of possibleShifts) {
+        for (const shift of shifts) {
+          const s = shift.start.split(':');
+          const e = shift.end.split(':');
+          sumHours += Number(e[0]) + Number(e[1]) / 60 - ((Number(s[0]) + Number(s[1]) / 60));
+          countShifts++;
+        }
+      }
+      const avgShift = sumHours / (countShifts || 1);
+      const minShifts = minHours.map(hours => Math.ceil(hours / avgShift));
+      const maxShifts = maxHours.map(hours => hours >= 0 ? Math.floor(hours / avgShift) : -1);
+
+      const data = {
+        shiftsPerDay,
+        availabilities,
+        preferences,
+        minEmployees,
+        maxEmployees,
+        minShifts,
+        maxShifts,
+        forceHours: options.forceHours,
+        forceMinimum: options.forceMinimum
+      };
 
       try {
         const response = await fetch('https://shift-scheduling-rest-api-welosfizjq-ey.a.run.app/api/schedule?data=' + JSON.stringify(data));
@@ -404,7 +433,7 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
   async save(publish = false): Promise<void> {
     try {
       this.status = 'in-progress';
-      await this.scheduleService.saveSchedule(publish);
+      await this.scheduleService.save(publish);
       this.snackService.successSnack(publish ? 'Opublikowano' : 'Zapisano');
     } catch (e) {
       this.snackService.errorSnack();
@@ -423,5 +452,19 @@ export class ScheduleEditComponent implements OnInit, OnDestroy {
       }
     }
     this.scheduleService.refreshStats();
+  }
+
+  async setHours(assignee: ScheduleMemberData): Promise<void> {
+    const dialogRef = this.matDialog.open(SetMinMaxHoursDialogComponent, {
+      data: {
+        min: assignee.minHours || undefined,
+        max: assignee.maxHours || undefined
+      }
+    });
+    const res: { min: number, max: number } = await dialogRef.afterClosed().toPromise();
+    if (res) {
+      assignee.minHours = res.min;
+      assignee.maxHours = res.max;
+    }
   }
 }

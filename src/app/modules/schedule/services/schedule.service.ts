@@ -1,12 +1,7 @@
 import {Injectable} from '@angular/core';
 import {DataService} from '../../../core/services/data.service';
 import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument} from '@angular/fire/firestore';
-import ConfigModel, {
-  ConfigExceptionShift,
-  ConfigShiftModel,
-  ConfigWithExceptionsModel,
-  PeriodicConfigShiftModel
-} from '../../../models/config.model';
+import ConfigModel, {ConfigExceptionShift, ConfigShiftModel, PeriodicConfigShiftModel, ScheduleConfig} from '../../../models/config.model';
 import {Subject, Subscription} from 'rxjs';
 import {SavedSchedule, ScheduleUserEntry} from '../../../models/schedule.model';
 import {getDaysCount} from '../../../core/utils/utils';
@@ -28,7 +23,7 @@ export class ScheduleService {
   private currentScheduleSubscription?: Subscription;
   public schedule: ScheduleUserEntry[] = [];
   public possibleShifts: PeriodicConfigShiftModel[][] = [];
-  config: ConfigWithExceptionsModel = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
+  config: ScheduleConfig = {hours: [], exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
   year = 0;
   month = 0;
   schedulesReady = new Subject<boolean>();
@@ -71,7 +66,7 @@ export class ScheduleService {
     this.scheduleCollection = undefined;
     this.schedule = [];
     this.possibleShifts = [];
-    this.config = {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
+    this.config = {hours: [], exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
     this.year = 0;
     this.month = 0;
   }
@@ -118,7 +113,7 @@ export class ScheduleService {
       const schedulesDoc = this.firestore.collection('schedules').doc(this.dataService.organizationData.id);
       const scheduleCollection = schedulesDoc.collection(scheduleTitle);
       batch.delete(scheduleCollection.doc('config').ref);
-      batch.delete(scheduleCollection.doc('working').ref);
+      batch.delete(scheduleCollection.doc('workingCopy').ref);
       batch.delete(scheduleCollection.doc('public').ref);
       batch.update(schedulesDoc.ref, {schedules: this.dataService.utils.FieldValue.arrayRemove(scheduleTitle)});
       await batch.commit();
@@ -143,7 +138,7 @@ export class ScheduleService {
       await this.loadAvailabilities();
       await this.loadSchedule(pub);
       this.currentScheduleSubscription = this.schedulesDoc?.collection(`${month + 1}-${year}`)
-        .doc<ConfigWithExceptionsModel>('config').valueChanges().subscribe(next => {
+        .doc<ScheduleConfig>('config').valueChanges().subscribe(next => {
           if (next) {
             for (let i = 0; i < 7; i++) {
               const shifts = next[DayShortNames[i] as DayShort];
@@ -161,10 +156,21 @@ export class ScheduleService {
               }
             }
           }
-          this.config = next || {exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
+          this.config = next || {hours: [], exceptions: [], fri: [], mon: [], sat: [], sun: [], thu: [], tue: [], wed: []};
           this.loadPossibleShifts(month, year);
+          this.loadHours();
           this.refreshStats();
         });
+    }
+  }
+
+  loadHours(): void {
+    for (const limit of this.config.hours) {
+      const assignee = this.schedule.find(e => e.assignee.userId === limit.userId)?.assignee;
+      if (assignee) {
+        assignee.minHours = limit.min;
+        assignee.maxHours = limit.max;
+      }
     }
   }
 
@@ -281,9 +287,22 @@ export class ScheduleService {
     }
   }
 
-  async saveSchedule(publish = false): Promise<void> {
+  async save(publish = false): Promise<void> {
     const data = [];
+    this.config.hours = [];
     for (const userEntry of this.schedule) {
+      const min = userEntry.assignee.minHours;
+      const max = userEntry.assignee.maxHours;
+      if (min || max) {
+        const hours: { min?: number, max?: number, userId: string } = {userId: userEntry.assignee.userId};
+        if (min) {
+          hours.min = min;
+        }
+        if (max) {
+          hours.max = max;
+        }
+        this.config.hours.push(hours);
+      }
       const shifts = [];
       for (const [i, periods] of userEntry.shifts.entries()) {
         if (periods.length > 0) {
@@ -294,9 +313,12 @@ export class ScheduleService {
         data.push({assignee: userEntry.assignee.userId, shifts});
       }
     }
+
+    await this.scheduleCollection?.doc<ScheduleConfig>('config').set(this.config);
     await this.scheduleCollection?.doc<SavedSchedule>('workingCopy').set({entries: data});
     if (publish) {
       await this.scheduleCollection?.doc<SavedSchedule>('public').set({entries: data});
     }
   }
+
 }

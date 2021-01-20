@@ -1,27 +1,37 @@
 # EmployeeManagementApp
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.3.
+This application is a part of engineering thesis 'Application for employee management' by Tomasz Janik written at
+Wrocław University of Science and Technology.
 
-## Development server
+## Live version
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+App is served on firebase hosting and available here: https://employee-management-84591.web.app/.
 
-## Code scaffolding
+## About
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+The purpose of this app is to help managers collect availability of theirs employees and make a correct schedule. It
+achieves that by providing intuitive interface and auto generation of a schedule. Generation of a schedule is based on
+binary programing model.
 
-## Build
+## Main functionalities:
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+* Schedule generation
+* Collecting availability
+* Overview statistics
 
-## Running unit tests
+## Technologies:
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+* Angular
+* Firebase
+  * Authentication
+  * Firestore
+  * Functions
+  * Hosting
+* Google Cloud Run
+* Google OR-Tools
 
-## Running end-to-end tests
+## Run locally
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+First you have to install dependencies, by running `npm install`. Note that it requires Node.js. Then un `ng serve` for
+a dev server and navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source
+files.

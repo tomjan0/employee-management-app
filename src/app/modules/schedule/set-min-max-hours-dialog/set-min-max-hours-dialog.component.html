@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>Ustaw ograniczenia</h2>
+<mat-dialog-content>
+  <form [formGroup]="hoursForm">
+    <div class="row">
+      <mat-form-field appearance="standard">
+        <mat-label>Minimum</mat-label>
+        <input matInput type="number" formControlName="min" min="0">
+        <mat-error
+          *ngIf="getControl('min').invalid">{{getErrorMessage(getControl('min'))}}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="standard">
+        <mat-label>Maksimum</mat-label>
+        <input matInput type="number" formControlName="max" min="1">
+        <mat-error
+          *ngIf="getControl('max').invalid">{{getErrorMessage(getControl('max'))}}</mat-error>
+      </mat-form-field>
+    </div>
+  </form>
+  <div class="warning">
+    <mat-icon>warning</mat-icon>
+    <div>Ograniczenia zostaną wyliczone na podstawie podaych wartości oraz średniej długości zmiany możliwej do przydzielenia. Z tego powodu wyliczone ograniczenia mogą różnić się minimalnie od podanych tutaj.</div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-raised-button color="primary" type="submit" [disabled]="hoursForm.invalid || checkRange"
+          [mat-dialog-close]="hoursForm.value">Zatwierdź
+  </button>
+  <button color="warn" mat-stroked-button mat-dialog-close>Anuluj</button>
+</mat-dialog-actions>

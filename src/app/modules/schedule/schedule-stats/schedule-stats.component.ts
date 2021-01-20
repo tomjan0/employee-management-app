@@ -19,7 +19,7 @@ export class ScheduleStatsComponent implements OnInit {
   hideNames = false;
 
   monthDates = Array.from(Array(12).keys()).map(i => new Date(this.date.getFullYear(), i));
-
+  sums = this.monthDates.map(() => 0);
   @ViewChild(MatTable) matTable?: MatTable<any>;
 
   constructor(private dataService: DataService,
@@ -62,13 +62,14 @@ export class ScheduleStatsComponent implements OnInit {
     }
 
     const schedules = await this.scheduleService.getAllSchedulesDataByYear(this.date.getFullYear());
-    console.log(schedules);
 
     for (const user of data) {
       for (const [s, schedule] of schedules.entries()) {
         const userEntry = schedule?.entries.find(e => e.assignee === user.uid);
         if (userEntry) {
-          user.stats[s] += this.countPeriods(userEntry.shifts.map(shift => shift.periods));
+          const count = this.countPeriods(userEntry.shifts.map(shift => shift.periods));
+          user.stats[s] += count;
+          this.sums[s] += count;
         }
       }
     }

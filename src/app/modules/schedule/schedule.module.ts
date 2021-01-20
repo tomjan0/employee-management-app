@@ -16,6 +16,7 @@ import {GenerateScheduleDialogComponent} from './generate-schedule-dialog/genera
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {ScheduleStatsComponent} from './schedule-stats/schedule-stats.component';
 import {ScheduleSettingsComponent} from './schedule-settings/schedule-settings.component';
+import { SetMinMaxHoursDialogComponent } from './set-min-max-hours-dialog/set-min-max-hours-dialog.component';
 
 
 @NgModule({
@@ -26,7 +27,8 @@ import {ScheduleSettingsComponent} from './schedule-settings/schedule-settings.c
     ScheduleViewComponent,
     GenerateScheduleDialogComponent,
     ScheduleStatsComponent,
-    ScheduleSettingsComponent],
+    ScheduleSettingsComponent,
+    SetMinMaxHoursDialogComponent],
   imports: [
     CommonModule,
     ScheduleRoutingModule,

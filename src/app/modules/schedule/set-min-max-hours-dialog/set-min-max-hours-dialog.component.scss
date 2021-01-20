@@ -1,0 +1,47 @@
+@import "src/styles/variables";
+
+mat-dialog-content {
+  width: min-content;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+
+  .row {
+    display: flex;
+    flex-direction: column;
+  }
+
+}
+
+.warning {
+  margin-top: 1em;
+  display: flex;
+  align-items: center;
+  color: $yellow-500;
+  font-size: .9em;
+
+  mat-icon {
+    font-size: 1.5em;
+    width: fit-content;
+    height: fit-content;
+    line-height: unset;
+    margin-right: .25em;
+  }
+}
+
+
+
+@media (min-width: 600px) {
+  form {
+    .row {
+      flex-direction: row;
+
+      mat-form-field:first-child {
+        margin-right: 1em;
+      }
+    }
+
+  }
+}

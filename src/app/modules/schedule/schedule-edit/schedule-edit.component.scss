@@ -74,6 +74,14 @@
 
       span {
         color: black;
+
+        &.limit {
+          color: $green-600;
+
+          &.invalid {
+            color: $red-600;
+          }
+        }
       }
     }
   }
