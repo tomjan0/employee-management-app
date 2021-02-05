@@ -32,6 +32,6 @@ binary programing model.
 
 ## Run locally
 
-First you have to install dependencies, by running `npm install`. Note that it requires Node.js. Then un `ng serve` for
+First you have to install dependencies by running `npm install`. Note that it requires Node.js. Then run `ng serve` for
 a dev server and navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source
 files.
